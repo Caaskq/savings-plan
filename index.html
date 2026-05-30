@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>2026 存钱计划</title>
+<style>
+:root {
+  --bg: #f0ede8;
+  --card-bg: #f8f6f3;
+  --text: #3d3d3d;
+  --text-secondary: #8c8c84;
+  --text-tertiary: #b5b0a8;
+  --income: #d4686a;
+  --income-light: #fbe8e8;
+  --expense: #5a9e6f;
+  --expense-light: #e4f2e8;
+  --border: #d5d0c6;
+  --cat-header-bg: #ede8df;
+  --input-name-bg: #f3f2ef;
+  --shadow: 0 1px 6px rgba(0,0,0,0.05);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  --overview-target-bg: #ededeb;
+  --overview-current-bg: #f2c4c4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.app-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+}
+
+/* ========== 顶部栏 ========== */
+.header {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  border: none;
+  background: none;
+  outline: none;
+  cursor: text;
+  padding: 2px 6px;
+  border-radius: 6px;
+  min-width: 120px;
+  transition: background 0.15s;
+}
+.header-title:hover { background: var(--input-name-bg); }
+.header-title:focus { background: var(--input-name-bg); }
+
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.year-selector select {
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  min-width: 68px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn:hover { background: var(--cat-header-bg); border-color: var(--text-tertiary); }
+.btn:active { transform: scale(0.97); }
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+.btn-del {
+  color: var(--expense);
+  border-color: transparent;
+  background: transparent;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.btn-del:hover { background: var(--expense-light); }
+
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px dashed var(--text-tertiary);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-add:hover { border-color: var(--text); color: var(--text); }
+
+.btn-add-cat {
+  padding: 6px 14px;
+  border: 1px dashed var(--text-tertiary);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  margin-top: 10px;
+}
+.btn-add-cat:hover { border-color: var(--text); color: var(--text); background: var(--card-bg); }
+
+/* ========== 卡片 ========== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ========== 年度总览 ========== */
+.overview-stats {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.overview-stat {
+  flex: 1;
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.overview-stat.target {
+  background: var(--overview-target-bg);
+}
+
+.overview-stat.current {
+  background: var(--overview-current-bg);
+}
+
+.overview-stat-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.overview-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+  transition: background 0.15s;
+}
+.overview-stat-value:hover { background: rgba(255,255,255,0.5); }
+.overview-stat-value:focus { background: rgba(255,255,255,0.5); outline: none; }
+
+.overview-stat-value input {
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid var(--text-secondary);
+  border-radius: 6px;
+  padding: 4px;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+}
+
+.progress-wrap { margin-top: 4px; }
+
+.progress-bar-outer {
+  height: 10px;
+  background: #ddd9d0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #f2c4c4, #e8968a);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+.progress-bar-inner.over { background: linear-gradient(90deg, #f2c4c4, #f0a89c); }
+.progress-bar-inner.decrease { background: var(--expense); }
+
+.progress-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* ========== 表格 ========== */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 400px;
+}
+
+th {
+  text-align: left;
+  padding: 10px 8px 8px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #eae6df;
+  vertical-align: middle;
+}
+
+td.editable {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 6px 8px;
+  transition: background 0.15s;
+  min-width: 40px;
+}
+td.editable:hover { background: var(--input-name-bg); }
+td.editable:focus { background: var(--input-name-bg); outline: none; }
+
+td.editable input {
+  width: 100%;
+  font-size: 0.88rem;
+  font-family: inherit;
+  border: 2px solid var(--text-secondary);
+  border-radius: 6px;
+  padding: 4px 6px;
+  outline: none;
+  background: #fff;
+}
+
+td.computed {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  cursor: default;
+}
+
+td.amount {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+th.amount { text-align: right; }
+
+td.actions { text-align: center; width: 40px; white-space: nowrap; }
+
+.summary-row td {
+  border-top: 2px solid var(--border);
+  font-weight: 700;
+  padding-top: 10px;
+}
+
+/* ========== 收入来源大类结构（顶部卡片）========== */
+.income-cat {
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.income-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--cat-header-bg);
+  user-select: none;
+}
+
+.income-cat-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  min-width: 60px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.income-cat-name:hover,
+.income-cat-name:focus {
+  background: rgba(255,255,255,0.6);
+}
+
+.income-cat-subtotal {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--income);
+  white-space: nowrap;
+}
+
+.income-cat-body {
+  padding: 6px 12px 10px;
+  background: var(--card-bg);
+}
+
+.income-cat-items .item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0ede8;
+}
+.income-cat-items .item-row:last-child { border-bottom: none; }
+
+/* 小类目行（通用） */
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0ede8;
+}
+.item-row:last-child { border-bottom: none; }
+
+.item-name-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--input-name-bg);
+  color: var(--text);
+  outline: none;
+  min-width: 60px;
+  transition: border-color 0.15s;
+}
+.item-name-input:focus { border-color: var(--text-tertiary); background: #fff; }
+
+.item-amount-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  width: 130px;
+  flex-shrink: 0;
+}
+.item-amount-prefix {
+  padding: 7px 0 7px 10px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  user-select: none;
+}
+.item-amount-input {
+  width: 100%;
+  border: none;
+  padding: 7px 10px 7px 2px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  outline: none;
+  background: transparent;
+  text-align: right;
+}
+.item-amount-input.income { color: var(--income); }
+.item-amount-input.expense { color: var(--expense); }
+.item-amount-input:focus { outline: none; }
+
+.income-total-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin-top: 8px;
+  background: var(--cat-header-bg);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+.income-total-label { font-size: 0.9rem; color: var(--text); }
+.income-total-value {
+  font-size: 1.1rem;
+  font-family: var(--font-mono);
+  color: var(--income);
+}
+
+/* ========== 月度收支大类结构 ========== */
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.month-selector label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.month-selector select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.month-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 14px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* 大类块 */
+.month-category {
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.month-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--cat-header-bg);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.month-cat-header:hover { background: #e0dcd5; }
+
+.month-cat-name-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+  min-width: 60px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.month-cat-name-input:hover,
+.month-cat-name-input:focus {
+  background: rgba(255,255,255,0.6);
+}
+
+.month-cat-subtotal {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+.month-cat-subtotal.income { color: var(--income); }
+.month-cat-subtotal.expense { color: var(--expense); }
+
+.month-cat-toggle {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+  width: 16px;
+  text-align: center;
+}
+.month-category.collapsed .month-cat-toggle { transform: rotate(-90deg); }
+
+.month-cat-body {
+  padding: 6px 12px 10px;
+  background: var(--card-bg);
+}
+.month-category.collapsed .month-cat-body { display: none; }
+
+.add-item-wrap { margin-top: 4px; }
+
+/* ========== 拖拽排序 ========== */
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 28px;
+  cursor: grab;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  user-select: none;
+  flex-shrink: 0;
+  letter-spacing: -1px;
+  transition: color 0.15s;
+}
+.drag-handle:hover { color: var(--text-secondary); }
+.drag-handle:active { cursor: grabbing; }
+
+.drag-handle-cell {
+  width: 32px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 2px !important;
+  cursor: grab;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  user-select: none;
+  letter-spacing: -1px;
+}
+.drag-handle-cell:hover { color: var(--text-secondary); }
+.drag-handle-cell span {
+  display: inline-block;
+  width: 100%;
+  cursor: grab;
+}
+
+.dragging {
+  opacity: 0.45;
+  background: rgba(176,136,128,0.07) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  outline: 2px solid #6b7db3;
+  outline-offset: -1px;
+  border-radius: 8px;
+  transition: none !important;
+}
+
+tr.dragging td {
+  opacity: 0.4;
+}
+
+.drop-target::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: #6b7db3;
+  border-radius: 2px;
+  z-index: 10;
+  pointer-events: none;
+}
+.drop-target[style*="below"]::after { bottom: -1px; }
+.drop-target[style*="above"]::after { top: -1px; }
+
+.item-row, .month-alloc-item, tr[data-sort-group] {
+  position: relative;
+}
+
+
+/* 月度汇总 */
+.month-summary {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--cat-header-bg);
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.month-summary-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.month-summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--income);
+}
+.month-summary-value.negative { color: var(--expense); }
+
+/* 月度内嵌存款分配（可编辑） */
+.month-allocation {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.month-allocation-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.month-alloc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 0.85rem;
+}
+
+.month-alloc-item-name {
+  width: 80px;
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.month-alloc-current {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.month-alloc-current .item-amount-wrap {
+  width: 100%;
+}
+
+.month-alloc-target {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.month-alloc-divider {
+  border-top: 1px dashed var(--border);
+  margin: 8px 0;
+}
+
+.month-alloc-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.month-alloc-remaining {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--income);
+}
+.month-alloc-remaining.negative { color: var(--expense); }
+
+/* 目前存款进度 */
+.month-progress {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.month-progress-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.month-progress-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+}
+.month-progress-value.increase { color: var(--income); }
+.month-progress-value.decrease { color: var(--expense); }
+
+.month-progress-delta {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.month-progress-delta.positive { color: var(--income); }
+.month-progress-delta.negative { color: var(--expense); }
+
+/* ========== 未来计划 ========== */
+details.plan-detail {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+details.plan-detail summary {
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--cat-header-bg);
+}
+details.plan-detail summary::-webkit-details-marker { display: none; }
+
+details.plan-detail summary::after {
+  content: '▸';
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+}
+details.plan-detail[open] summary::after { transform: rotate(90deg); }
+
+.plan-body { padding: 12px 14px 14px; }
+
+.plan-body .plan-title-input {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 4px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  color: var(--text);
+  font-family: inherit;
+}
+.plan-body .plan-title-input:hover,
+.plan-body .plan-title-input:focus { background: var(--input-name-bg); }
+
+.plan-body textarea {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  color: var(--text);
+}
+.plan-body textarea:focus {
+  border-color: var(--text-secondary);
+  box-shadow: 0 0 0 3px rgba(140,140,132,0.1);
+}
+
+/* ========== 存款计划目标金额列 ========== */
+td.target-amount {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3d3d3d;
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; pointer-events: auto; }
+
+#backupFileInput { display: none; }
+
+@media (max-width: 520px) {
+  .item-amount-wrap { width: 110px; }
+  .overview-stats { gap: 8px; }
+  .overview-stat-value { font-size: 1.25rem; }
+  .month-alloc-item-name { width: 58px; font-size: 0.78rem; }
+  .month-alloc-current { width: 85px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- 顶部栏 -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title" contenteditable="true" id="headerTitle">2026 存钱计划</div>
+      <div class="year-selector">
+        <select id="yearSelect"></select>
+        <button class="btn btn-sm" id="btnAddYear" title="添加年份">+</button>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btnSave">保存备份</button>
+      <button class="btn" id="btnLoad">读取备份</button>
+    </div>
+  </div>
+
+  <!-- 年度总览 -->
+  <div class="card" id="overviewCard">
+    <div class="card-title">年度总览</div>
+    <div class="overview-stats">
+      <div class="overview-stat target">
+        <div class="overview-stat-label">目标存款</div>
+        <div class="overview-stat-value" data-key="overview.target" contenteditable="true">¥100,000</div>
+      </div>
+      <div class="overview-stat current">
+        <div class="overview-stat-label">开年进度</div>
+        <div class="overview-stat-value" data-key="overview.current" contenteditable="true">¥401,390</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progressBar"></div>
+      </div>
+      <div class="progress-text" id="progressText">401.4%</div>
+    </div>
+  </div>
+
+  <!-- 收入来源 -->
+  <div class="card" id="incomeCard">
+    <div class="card-title">收入来源</div>
+    <div id="incomeCategories"></div>
+    <div class="income-total-wrap" id="incomeTotal"></div>
+  </div>
+
+  <!-- 年度大额支出 -->
+  <div class="card" id="largeExpenseCard">
+    <div class="card-title">年度大额支出</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="drag-handle-cell"></th><th>名称</th><th class="amount">金额</th><th>备注</th><th class="actions"></th></tr></thead>
+        <tbody id="largeExpenseBody"></tbody>
+        <tfoot id="largeExpenseFoot"></tfoot>
+      </table>
+    </div>
+    <button class="btn btn-add" data-table="largeExpense" style="margin-top:8px;">+ 添加支出项</button>
+  </div>
+
+  <!-- 欠款追踪 -->
+  <div class="card" id="debtCard">
+    <div class="card-title">欠款追踪</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="drag-handle-cell"></th><th>欠款项目</th><th class="amount">金额</th><th class="amount">还款月数</th><th class="amount">月还款额</th><th>备注</th><th class="actions"></th></tr></thead>
+        <tbody id="debtBody"></tbody>
+        <tfoot id="debtFoot"></tfoot>
+      </table>
+    </div>
+    <button class="btn btn-add" data-table="debt" style="margin-top:8px;">+ 添加欠款项</button>
+  </div>
+
+  <!-- 存款计划 -->
+  <div class="card" id="allocationCard">
+    <div class="card-title">存款计划</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="drag-handle-cell"></th><th>项目</th><th class="amount">目前金额</th><th class="amount">目标金额</th><th>备注</th><th class="actions"></th></tr></thead>
+        <tbody id="allocationBody"></tbody>
+        <tfoot id="allocationFoot"></tfoot>
+      </table>
+    </div>
+    <button class="btn btn-add" data-table="allocation" style="margin-top:8px;">+ 添加分配项</button>
+  </div>
+
+  <!-- 月度收支模板 -->
+  <div class="card" id="monthlyCard">
+    <div class="card-title">月度收支模板</div>
+    <div class="month-selector">
+      <label for="monthSelect">选择月份</label>
+      <select id="monthSelect">
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6" selected>6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+    </div>
+
+    <!-- 收入区域 -->
+    <div class="month-section-title">收入</div>
+    <div id="monthIncomeCategories"></div>
+    <button class="btn btn-add-cat" data-action="add-income-cat">+ 添加入大类</button>
+
+    <!-- 支出区域 -->
+    <div class="month-section-title">支出</div>
+    <div id="monthExpenseCategories"></div>
+
+    <!-- 当月存款 -->
+    <div class="month-summary">
+      <span class="month-summary-label">当月存款</span>
+      <span class="month-summary-value" id="monthBalance">¥0</span>
+    </div>
+
+    <!-- 内嵌存款分配（可编辑） -->
+    <div class="month-allocation" id="monthAllocation">
+      <div class="month-allocation-title">存款分配（可编辑，与顶部存款计划同步）</div>
+      <div id="monthAllocBody"></div>
+      <button class="btn btn-add" data-action="add-month-alloc" style="margin-top:6px;">+ 添加分配项目</button>
+    </div>
+
+    <!-- 目前存款进度 -->
+    <div class="month-progress" id="monthProgress">
+      <div class="month-progress-title">目前存款进度</div>
+      <div class="month-progress-value" id="monthProgressValue">¥401,390</div>
+      <div class="month-progress-delta" id="monthProgressDelta"></div>
+      <div class="progress-wrap">
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="monthProgressBar"></div>
+        </div>
+        <div class="progress-text" id="monthProgressText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未来计划 -->
+  <div class="card" id="planCard">
+    <div class="card-title">未来计划</div>
+    <details class="plan-detail" data-plan="basic">
+      <summary><span>基础版</span></summary>
+      <div class="plan-body">
+        <input class="plan-title-input" value="基础版" placeholder="计划标题">
+        <textarea placeholder="输入计划内容..."></textarea>
+      </div>
+    </details>
+    <details class="plan-detail" data-plan="advanced1">
+      <summary><span>进阶版1</span></summary>
+      <div class="plan-body">
+        <input class="plan-title-input" value="进阶版1" placeholder="计划标题">
+        <textarea placeholder="输入计划内容..."></textarea>
+      </div>
+    </details>
+    <details class="plan-detail" data-plan="advanced2">
+      <summary><span>进阶版2</span></summary>
+      <div class="plan-body">
+        <input class="plan-title-input" value="进阶版2" placeholder="计划标题">
+        <textarea placeholder="输入计划内容..."></textarea>
+      </div>
+    </details>
+    <details class="plan-detail" data-plan="aggressive">
+      <summary><span>激进版</span></summary>
+      <div class="plan-body">
+        <input class="plan-title-input" value="激进版" placeholder="计划标题">
+        <textarea placeholder="输入计划内容..."></textarea>
+      </div>
+    </details>
+  </div>
+</div>
+
+<input type="file" id="backupFileInput" accept=".json">
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== 数据管理 ====================
+const DEFAULT_YEAR_DATA = {
+  title: '2026 存钱计划',
+  overview: { target: 100000, current: 401390 },
+  incomeCategories: [
+    { name: '主业', items: [{ name: '工资', amount: 10500, note: '' }] },
+    { name: '副业', items: [] },
+    { name: '其他', items: [] }
+  ],
+  largeExpenses: [
+    { name: '电脑', amount: 8000, note: '618购入' }
+  ],
+  debts: [
+    { name: '招行手机分期', amount: 1497, months: 9, note: '' },
+    { name: '交通平板分期', amount: 3115, months: 12, note: '' },
+    { name: '浦发体检分期', amount: 262, months: 2, note: '' }
+  ],
+  allocations: [
+    { name: '养老金', currentAmount: 0, targetAmount: 3000, note: '' },
+    { name: '机器人基金', currentAmount: 0, targetAmount: 1344, note: '' },
+    { name: '娱乐基金', currentAmount: 0, targetAmount: 1000, note: '' },
+    { name: '投资基金', currentAmount: 0, targetAmount: 50000, note: '' },
+    { name: '应急储备', currentAmount: 0, targetAmount: 20000, note: '' }
+  ],
+  monthlyData: {
+    '6': {
+      incomeCategories: [
+        { name: '收入来源', collapsed: false, items: [
+          { name: '工资', amount: 10500, note: '' },
+          { name: '基金浮动', amount: '~827~2438', note: '' }
+        ]}
+      ],
+      expenseCategories: [
+        { name: '欠款', collapsed: false, items: [] },
+        { name: '向日葵', collapsed: false, items: [] },
+        { name: '购物', collapsed: false, items: [] },
+        { name: '生活消费', collapsed: false, items: [] },
+        { name: '伙食费', collapsed: false, items: [] },
+        { name: '其他', collapsed: false, items: [] }
+      ]
+    }
+  },
+  futurePlans: {
+    basic: { title: '基础版', content: '' },
+    advanced1: { title: '进阶版1', content: '' },
+    advanced2: { title: '进阶版2', content: '' },
+    aggressive: { title: '激进版', content: '' }
+  }
+};
+
+const DEFAULT_DATA = { '2026': JSON.parse(JSON.stringify(DEFAULT_YEAR_DATA)) };
+
+let allYearsData = {};
+let currentYear = '2026';
+let appData = null;
+
+function yd() { return appData; }  // getter, kept for future use but not needed now
+
+// ==================== 金额工具 ====================
+function parseAmount(val) {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[¥,\s]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  }
+  return null;
+}
+
+function tryParseAmount(val) {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[¥,\s]/g, '');
+    const rangeMatch = cleaned.match(/~?([\d.]+)~([\d.]+)/);
+    if (rangeMatch) {
+      const avg = (parseFloat(rangeMatch[1]) + parseFloat(rangeMatch[2])) / 2;
+      return isNaN(avg) ? 0 : avg;
+    }
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+}
+
+function formatAmount(val) {
+  if (val === null || val === undefined) return '¥0';
+  if (typeof val === 'string') {
+    const num = parseAmount(val);
+    if (num === null) return val;
+    val = num;
+  }
+  if (typeof val !== 'number' || isNaN(val)) return '¥0';
+  const sign = val < 0 ? '-' : '';
+  const abs = Math.abs(val);
+  const parts = abs.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimal = parts[1] === '00' ? '' : '.' + parts[1];
+  return '¥' + sign + parts[0] + decimal;
+}
+
+function displayAmount(val) {
+  if (typeof val === 'string') {
+    const num = parseAmount(val);
+    if (num === null) return val;
+    return num;
+  }
+  return val;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ==================== 存储 ====================
+function openDB() {
+  return new Promise((resolve) => {
+    const request = indexedDB.open('SavingsPlanDB', 1);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('planData')) {
+        db.createObjectStore('planData', { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = (e) => resolve(e.target.result);
+    request.onerror = () => resolve(null);
+  });
+}
+
+async function saveToStorage() {
+  allYearsData[currentYear] = appData;
+  localStorage.setItem('savingsPlan', JSON.stringify(allYearsData));
+  try {
+    const db = await openDB();
+    if (db) {
+      const tx = db.transaction('planData', 'readwrite');
+      tx.objectStore('planData').put({ id: 'current', data: allYearsData });
+    }
+  } catch (e) { /* ignore */ }
+}
+
+async function loadFromStorage() {
+  try {
+    const db = await openDB();
+    if (db) {
+      const result = await new Promise((resolve) => {
+        const tx = db.transaction('planData', 'readonly');
+        const req = tx.objectStore('planData').get('current');
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+      if (result && result.data) {
+        allYearsData = migrateAllData(result.data);
+        return;
+      }
+    }
+  } catch (e) { /* fallback */ }
+  const stored = localStorage.getItem('savingsPlan');
+  if (stored) {
+    try { allYearsData = migrateAllData(JSON.parse(stored)); } catch (e) { /* corrupted */ }
+  }
+}
+// 迁移全部年份数据：旧版单年数据 → 多年份结构
+function migrateAllData(data) {
+  // Check if multi-year format: keys are 4-digit years
+  const keys = Object.keys(data);
+  const yearKeys = keys.filter(k => /^\d{4}$/.test(k));
+  if (yearKeys.length > 0) {
+    const result = {};
+    yearKeys.forEach(year => { result[year] = migrateData(data[year]); });
+    return result;
+  }
+  // Old flat single-year format
+  if (data.overview) {
+    return { '2026': migrateData(data) };
+  }
+  // Fallback
+  return { '2026': migrateData(DEFAULT_YEAR_DATA) };
+}
+
+function migrateData(data) {
+  // 迁移旧版收入来源（数组）→ 新大类结构
+  if (data.incomeSources && !data.incomeCategories) {
+    const mainItems = [];
+    const oldItems = data.incomeSources;
+    // 尽可能将旧数据归入主业
+    oldItems.forEach(src => {
+      const amt = typeof src.amount === 'number' ? src.amount : parseAmount(src.amount) || 0;
+      mainItems.push({ name: src.name, amount: amt });
+    });
+    data.incomeCategories = [
+      { name: '主业', items: mainItems },
+      { name: '副业', items: [] },
+      { name: '其他', items: [] }
+    ];
+    delete data.incomeSources;
+  }
+
+  // 确保 incomeCategories 存在且结构正确
+  if (!data.incomeCategories || !Array.isArray(data.incomeCategories)) {
+    data.incomeCategories = [
+      { name: '主业', items: [] },
+      { name: '副业', items: [] },
+      { name: '其他', items: [] }
+    ];
+  }
+  data.incomeCategories.forEach(cat => {
+    if (!cat.items) cat.items = [];
+    cat.items.forEach(item => { if (item.note === undefined) item.note = ''; });
+  });
+
+  // 迁移旧版 allocations（amount → currentAmount + targetAmount）
+  if (data.allocations && data.allocations.length > 0) {
+    const first = data.allocations[0];
+    if (first.targetAmount === undefined && first.currentAmount === undefined) {
+      data.allocations = data.allocations.map(a => ({
+        name: a.name || '',
+        currentAmount: 0,
+        targetAmount: typeof a.amount === 'number' ? a.amount : (parseAmount(a.amount) || 0),
+        note: a.note || ''
+      }));
+    }
+  }
+
+  // 确保 largeExpenses 存在
+  if (!data.largeExpenses) data.largeExpenses = [];
+
+  // 月度收支旧格式迁移
+  if (!data.monthlyData) data.monthlyData = {};
+  Object.keys(data.monthlyData).forEach(month => {
+    const md = data.monthlyData[month];
+    if (md.incomes && !md.incomeCategories) {
+      md.incomeCategories = [
+        { name: '收入来源', collapsed: false, items: md.incomes.map(i => ({ name: i.name, amount: i.amount })) }
+      ];
+      delete md.incomes;
+    }
+    if (md.expenses && !md.expenseCategories) {
+      md.expenseCategories = [
+        { name: '欠款', collapsed: false, items: [] },
+        { name: '向日葵', collapsed: false, items: [] },
+        { name: '购物', collapsed: false, items: [] },
+        { name: '生活消费', collapsed: false, items: [] },
+        { name: '伙食费', collapsed: false, items: [] },
+        { name: '其他', collapsed: false, items: md.expenses.map(e => ({ name: e.name, amount: e.amount })) }
+      ];
+      delete md.expenses;
+    }
+  });
+  Object.keys(data.monthlyData).forEach(month => {
+    const md = data.monthlyData[month];
+    if (!md.incomeCategories) {
+      md.incomeCategories = [{ name: '收入来源', collapsed: false, items: [] }];
+    }
+    // 给所有 items 补 note 字段
+    const ensureNotes = (cats) => {
+      cats.forEach(cat => {
+        if (cat.items) cat.items.forEach(item => { if (item.note === undefined) item.note = ''; });
+      });
+    };
+    ensureNotes(md.incomeCategories || []);
+    ensureNotes(md.expenseCategories || []);
+    if (!md.expenseCategories) {
+      md.expenseCategories = [
+        { name: '欠款', collapsed: false, items: [] },
+        { name: '向日葵', collapsed: false, items: [] },
+        { name: '购物', collapsed: false, items: [] },
+        { name: '生活消费', collapsed: false, items: [] },
+        { name: '伙食费', collapsed: false, items: [] },
+        { name: '其他', collapsed: false, items: [] }
+      ];
+    }
+  });
+
+  return data;
+}
+
+// ==================== Toast ====================
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ==================== 月份存款计算 ====================
+function calcMonthDeposit(month) {
+  const data = appData.monthlyData[String(month)];
+  if (!data) return 0;
+  const incTotal = (data.incomeCategories || []).reduce((s, cat) =>
+    s + (cat.items || []).reduce((ss, item) => ss + tryParseAmount(item.amount), 0), 0);
+  const expTotal = (data.expenseCategories || []).reduce((s, cat) =>
+    s + (cat.items || []).reduce((ss, item) => ss + tryParseAmount(item.amount), 0), 0);
+  return incTotal - expTotal;
+}
+
+function calcYearDeposits(uptoMonth) {
+  let total = 0;
+  for (let m = 1; m <= uptoMonth; m++) { total += calcMonthDeposit(m); }
+  return total;
+}
+
+// ==================== 渲染函数 ====================
+
+// -- 年度总览 --
+function renderOverview() {
+  const target = appData.overview.target;
+  const opening = appData.overview.current;
+  const yearDeposits = calcYearDeposits(12);
+
+  document.querySelector('#overviewCard .overview-stat-value[data-key="overview.target"]').textContent = formatAmount(target);
+  document.querySelector('#overviewCard .overview-stat-value[data-key="overview.current"]').textContent = formatAmount(opening);
+
+  const pct = target > 0 ? (yearDeposits / target * 100) : 0;
+  const bar = document.getElementById('progressBar');
+  bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+  bar.className = 'progress-bar-inner' + (pct > 100 ? ' over' : '');
+  document.getElementById('progressText').textContent =
+    '今年已存 ' + formatAmount(yearDeposits) + ' / 目标 ' + formatAmount(target);
+}
+
+// -- 收入来源（大类结构）--
+function renderIncome() {
+  const container = document.getElementById('incomeCategories');
+  const totalWrap = document.getElementById('incomeTotal');
+  let grandTotal = 0;
+  let html = '';
+
+  appData.incomeCategories.forEach((cat, catIdx) => {
+    const catTotal = cat.items.reduce((s, item) => s + tryParseAmount(item.amount), 0);
+    grandTotal += catTotal;
+
+    html += `<div class="income-cat" data-cat-idx="${catIdx}">
+      <div class="income-cat-header">
+        <input class="income-cat-name" value="${escHtml(cat.name)}" data-field="income-cat-name" placeholder="大类名称">
+        <span class="income-cat-subtotal">${formatAmount(catTotal)}</span>
+      </div>
+      <div class="income-cat-body">
+        <div class="income-cat-items">`;
+
+    cat.items.forEach((item, itemIdx) => {
+      const amtDisplay = displayAmount(item.amount);
+      html += `<div class="item-row" data-item-idx="${itemIdx}" data-sort-group="income-items-${catIdx}" data-sort-idx="${itemIdx}">
+        <span class="drag-handle" draggable="true">⋮⋮</span>
+        <input class="item-name-input" value="${escHtml(item.name)}" data-field="income-item-name" placeholder="名称">
+        <div class="item-amount-wrap">
+          <span class="item-amount-prefix">¥</span>
+          <input class="item-amount-input income" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="income-item-amount" placeholder="0">
+        </div>
+        <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="income-item-note" placeholder="备注" style="flex:0.55;min-width:50px;">
+        <button class="btn-del" data-action="delete-income-item">✕</button>
+      </div>`;
+    });
+
+    html += `</div>
+        <div class="add-item-wrap">
+          <button class="btn btn-add" data-action="add-income-item">+ 添加小类目</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  totalWrap.innerHTML = `<span class="income-total-label">收入合计</span><span class="income-total-value">${formatAmount(grandTotal)}</span>`;
+}
+
+// -- 大额支出 --
+function renderLargeExpense() {
+  const tbody = document.getElementById('largeExpenseBody');
+  const foot = document.getElementById('largeExpenseFoot');
+  let total = 0;
+  tbody.innerHTML = '';
+  appData.largeExpenses.forEach((item, idx) => {
+    const amt = tryParseAmount(item.amount);
+    total += amt;
+    tbody.innerHTML += `<tr data-idx="${idx}" data-sort-group="large-expense" data-sort-idx="${idx}">
+      <td class="drag-handle-cell"><span draggable="true">⋮⋮</span></td>
+      <td class="editable" data-field="name" contenteditable="true">${escHtml(item.name)}</td>
+      <td class="amount editable" data-field="amount" contenteditable="true">${formatAmount(item.amount)}</td>
+      <td class="editable" data-field="note" contenteditable="true">${escHtml(item.note || '')}</td>
+      <td class="actions"><button class="btn-del" data-action="delete">✕</button></td>
+    </tr>`;
+  });
+  foot.innerHTML = `<tr class="summary-row"><td></td><td colspan="3" style="text-align:right;">支出合计</td><td class="amount">${formatAmount(total)}</td></tr>`;
+}
+
+// -- 欠款追踪 --
+function renderDebt() {
+  const tbody = document.getElementById('debtBody');
+  const foot = document.getElementById('debtFoot');
+  let total = 0;
+  tbody.innerHTML = '';
+  appData.debts.forEach((item, idx) => {
+    const amt = tryParseAmount(item.amount);
+    const months = parseInt(item.months) || 0;
+    const monthly = months > 0 ? (amt / months) : 0;
+    total += amt;
+    tbody.innerHTML += `<tr data-idx="${idx}" data-sort-group="debt" data-sort-idx="${idx}">
+      <td class="drag-handle-cell"><span draggable="true">⋮⋮</span></td>
+      <td class="editable" data-field="name" contenteditable="true">${escHtml(item.name)}</td>
+      <td class="amount editable" data-field="amount" contenteditable="true">${formatAmount(item.amount)}</td>
+      <td class="amount editable" data-field="months" contenteditable="true">${item.months}</td>
+      <td class="amount computed">${formatAmount(monthly)}</td>
+      <td class="editable" data-field="note" contenteditable="true">${escHtml(item.note || '')}</td>
+      <td class="actions"><button class="btn-del" data-action="delete">✕</button></td>
+    </tr>`;
+  });
+  foot.innerHTML = `<tr class="summary-row"><td></td><td colspan="5" style="text-align:right;">欠款合计</td><td class="amount">${formatAmount(total)}</td></tr>`;
+}
+
+// -- 存款计划 --
+function renderAllocation() {
+  const tbody = document.getElementById('allocationBody');
+  const foot = document.getElementById('allocationFoot');
+  let currentTotal = 0;
+  let targetTotal = 0;
+  tbody.innerHTML = '';
+  appData.allocations.forEach((item, idx) => {
+    const cur = tryParseAmount(item.currentAmount);
+    const tgt = tryParseAmount(item.targetAmount);
+    currentTotal += cur;
+    targetTotal += tgt;
+    tbody.innerHTML += `<tr data-idx="${idx}" data-sort-group="allocation" data-sort-idx="${idx}">
+      <td class="drag-handle-cell"><span draggable="true">⋮⋮</span></td>
+      <td class="editable" data-field="name" contenteditable="true">${escHtml(item.name)}</td>
+      <td class="amount editable" data-field="currentAmount" contenteditable="true">${formatAmount(item.currentAmount)}</td>
+      <td class="amount editable" data-field="targetAmount" contenteditable="true">${formatAmount(item.targetAmount)}</td>
+      <td class="editable" data-field="note" contenteditable="true">${escHtml(item.note || '')}</td>
+      <td class="actions"><button class="btn-del" data-action="delete">✕</button></td>
+    </tr>`;
+  });
+  const gap = targetTotal - currentTotal;
+  foot.innerHTML = `<tr class="summary-row"><td></td><td style="text-align:right;">目前金额合计</td><td class="amount">${formatAmount(currentTotal)}</td><td></td><td></td><td></td></tr>
+    <tr class="summary-row"><td></td><td style="text-align:right;">目标金额合计</td><td></td><td class="amount">${formatAmount(targetTotal)}</td><td></td><td></td></tr>
+    <tr class="summary-row"><td></td><td style="text-align:right;">目前还差（距离目标）</td><td></td><td class="amount" style="color:var(--income);">${formatAmount(gap)}</td><td></td><td></td></tr>`;
+}
+
+// ==================== 月度收支渲染 ====================
+let currentMonth = '6';
+
+function ensureMonthData(month) {
+  if (!appData.monthlyData[month]) {
+    appData.monthlyData[month] = {
+      incomeCategories: [{ name: '收入来源', collapsed: false, items: [] }],
+      expenseCategories: [
+        { name: '欠款', collapsed: false, items: [] },
+        { name: '向日葵', collapsed: false, items: [] },
+        { name: '购物', collapsed: false, items: [] },
+        { name: '生活消费', collapsed: false, items: [] },
+        { name: '伙食费', collapsed: false, items: [] },
+        { name: '其他', collapsed: false, items: [] }
+      ]
+    };
+  }
+  return appData.monthlyData[month];
+}
+
+function renderMonthlyCategories(containerId, categories, type) {
+  const container = document.getElementById(containerId);
+  let html = '';
+
+  categories.forEach((cat, catIdx) => {
+    const catTotal = cat.items.reduce((s, item) => s + tryParseAmount(item.amount), 0);
+    const collapsedClass = cat.collapsed ? ' collapsed' : '';
+    const amountClass = type === 'income' ? 'income' : 'expense';
+
+    html += `<div class="month-category${collapsedClass}" data-cat-idx="${catIdx}" data-type="${type}">
+      <div class="month-cat-header" data-action="toggle-cat">
+        <input class="month-cat-name-input" value="${escHtml(cat.name)}" data-field="cat-name" placeholder="大类名称">
+        <span class="month-cat-subtotal ${amountClass}">${formatAmount(catTotal)}</span>
+        <span class="month-cat-toggle">▾</span>
+      </div>
+      <div class="month-cat-body">
+        <div class="month-cat-items">`;
+
+    cat.items.forEach((item, itemIdx) => {
+      const amtDisplay = displayAmount(item.amount);
+      html += `<div class="item-row" data-item-idx="${itemIdx}" data-sort-group="monthly-${type}-${catIdx}" data-sort-idx="${itemIdx}">
+        <span class="drag-handle" draggable="true">⋮⋮</span>
+        <input class="item-name-input" value="${escHtml(item.name)}" data-field="item-name" placeholder="名称">
+        <div class="item-amount-wrap">
+          <span class="item-amount-prefix">¥</span>
+          <input class="item-amount-input ${amountClass}" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="item-amount" placeholder="0">
+        </div>
+        <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="item-note" placeholder="备注" style="flex:0.55;min-width:50px;">
+        <button class="btn-del" data-action="delete-item">✕</button>
+      </div>`;
+    });
+
+    html += `</div>
+        <div class="add-item-wrap">
+          <button class="btn btn-add" data-action="add-item">+ 添加小类目</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  return categories.reduce((s, cat) => s + cat.items.reduce((ss, item) => ss + tryParseAmount(item.amount), 0), 0);
+}
+
+function renderMonthly() {
+  const data = ensureMonthData(currentMonth);
+
+  const incomeTotal = renderMonthlyCategories('monthIncomeCategories', data.incomeCategories, 'income');
+  const expenseTotal = renderMonthlyCategories('monthExpenseCategories', data.expenseCategories, 'expense');
+
+  // 当月存款
+  const balance = incomeTotal - expenseTotal;
+  const balEl = document.getElementById('monthBalance');
+  balEl.textContent = formatAmount(balance);
+  balEl.className = 'month-summary-value' + (balance < 0 ? ' negative' : '');
+
+  // 内嵌存款分配（可编辑）
+  renderMonthAllocation();
+
+  // 目前存款进度
+  renderMonthProgress(balance);
+  renderOverview();
+}
+
+function renderMonthAllocation() {
+  const body = document.getElementById('monthAllocBody');
+  const data = ensureMonthData(currentMonth);
+
+  // 首次访问时从顶部存款计划初始化月度分配数据（仅一次，之后完全独立）
+  if (!data.allocations) {
+    data.allocations = appData.allocations.map(a => ({
+      name: a.name,
+      currentAmount: 0,
+      note: ''
+    }));
+  }
+  // 清理可能的空条目
+  data.allocations = data.allocations.filter(a => a != null && a.name != null);
+
+  let currentTotal = 0;
+  let html = '';
+
+  data.allocations.forEach((item, allocIdx) => {
+    if (!item) return;
+    const cur = tryParseAmount(item.currentAmount);
+    currentTotal += cur;
+    const curDisplay = displayAmount(item.currentAmount);
+    const mainAlloc = appData.allocations.find(a => a.name === item.name);
+    const tgt = mainAlloc ? tryParseAmount(mainAlloc.targetAmount) : 0;
+    html += `<div class="month-alloc-item" data-alloc-idx="${allocIdx}" data-sort-group="monthly-alloc" data-sort-idx="${allocIdx}">
+      <span class="drag-handle" draggable="true">⋮⋮</span>
+      <span class="month-alloc-item-name">${escHtml(item.name)}</span>
+      <span class="month-alloc-current">
+        <div class="item-amount-wrap">
+          <span class="item-amount-prefix">¥</span>
+          <input class="item-amount-input income" data-field="alloc-current" value="${typeof curDisplay === 'number' ? curDisplay : curDisplay}" placeholder="0">
+        </div>
+      </span>
+      <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="alloc-note" placeholder="备注" style="flex:0.5;min-width:55px;">
+      <span class="month-alloc-target">目标 ${formatAmount(tgt)}</span>
+      <button class="btn-del" data-action="delete-month-alloc">✕</button>
+    </div>`;
+  });
+
+  html += `<div class="month-alloc-divider"></div>
+    <div class="month-alloc-summary">
+      <span>目前金额合计</span>
+      <span>${formatAmount(currentTotal)}</span>
+    </div>`;
+
+  body.innerHTML = html;
+}
+
+function renderMonthProgress(balance) {
+  const opening = appData.overview.current || 0;
+  const target = appData.overview.target || 1;
+  const ytdDeposits = calcYearDeposits(parseInt(currentMonth));
+  const cumulative = opening + ytdDeposits;
+  const pct = target > 0 ? (ytdDeposits / target * 100) : 0;
+
+  const progressVal = document.getElementById('monthProgressValue');
+  progressVal.textContent = '累计存款 ' + formatAmount(cumulative);
+  progressVal.className = 'month-progress-value ' + (balance >= 0 ? 'increase' : 'decrease');
+
+  const deltaEl = document.getElementById('monthProgressDelta');
+  if (balance >= 0) {
+    deltaEl.textContent = '本月预计增加 ' + formatAmount(balance);
+    deltaEl.className = 'month-progress-delta positive';
+  } else {
+    deltaEl.textContent = '本月预计减少 ' + formatAmount(balance);
+    deltaEl.className = 'month-progress-delta negative';
+  }
+
+  const bar = document.getElementById('monthProgressBar');
+  bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+  bar.className = 'progress-bar-inner' + (pct > 100 ? ' over' : '') + (balance < 0 ? ' decrease' : '');
+
+  document.getElementById('monthProgressText').textContent =
+    '今年完成 ' + pct.toFixed(1) + '%（' + formatAmount(ytdDeposits) + ' / ' + formatAmount(target) + '）';
+}
+
+// -- 未来计划 --
+function renderPlans() {
+  document.querySelectorAll('.plan-detail').forEach(detail => {
+    const planKey = detail.dataset.plan;
+    const plan = appData.futurePlans[planKey];
+    if (!plan) return;
+    detail.querySelector('summary span').textContent = plan.title;
+    detail.querySelector('.plan-title-input').value = plan.title;
+    detail.querySelector('textarea').value = plan.content || '';
+  });
+}
+
+
+// ==================== 拖拽排序系统 ====================
+(function() {
+  let dragInfo = null;
+  let touchInfo = null;
+  let touchClone = null;
+  let longPressTimer = null;
+
+  // Guard to prevent blur-triggered re-renders from destroying drag source DOM
+  window._dragSortActive = false;
+  document.addEventListener('mousedown', function(e) {
+    if (e.target.closest('.drag-handle, .drag-handle-cell')) {
+      window._dragSortActive = true;
+    }
+  });
+  document.addEventListener('mouseup', function() {
+    setTimeout(function() { window._dragSortActive = false; }, 50);
+  });
+
+  function getSortGroupData(groupId) {
+    if (groupId === 'large-expense') return appData.largeExpenses;
+    if (groupId === 'debt') return appData.debts;
+    if (groupId === 'allocation') return appData.allocations;
+
+    const incMatch = groupId.match(/^income-items-(\d+)$/);
+    if (incMatch) return appData.incomeCategories[parseInt(incMatch[1])].items;
+
+    const monthIncMatch = groupId.match(/^monthly-income-(\d+)$/);
+    if (monthIncMatch) {
+      const md = ensureMonthData(currentMonth);
+      return md.incomeCategories[parseInt(monthIncMatch[1])].items;
+    }
+    const monthExpMatch = groupId.match(/^monthly-expense-(\d+)$/);
+    if (monthExpMatch) {
+      const md = ensureMonthData(currentMonth);
+      return md.expenseCategories[parseInt(monthExpMatch[1])].items;
+    }
+    if (groupId === 'monthly-alloc') {
+      const md = ensureMonthData(currentMonth);
+      if (!md.allocations) md.allocations = [];
+      return md.allocations;
+    }
+    return null;
+  }
+
+  function getRenderFn(groupId) {
+    if (groupId.startsWith('income-items-')) return renderIncome;
+    if (groupId === 'large-expense') return renderLargeExpense;
+    if (groupId === 'debt') return renderDebt;
+    if (groupId === 'allocation') return function() { renderAllocation(); renderMonthly(); };
+    if (groupId.startsWith('monthly-')) return renderMonthly;
+    return null;
+  }
+
+  function clearIndicators(container) {
+    if (!container) return;
+    container.querySelectorAll('.drop-target').forEach(function(el) {
+      el.classList.remove('drop-target');
+      el.style.removeProperty('--drop-pos');
+    });
+  }
+
+  function findTarget(container, groupId, clientY, excludeEl) {
+    var items = container.querySelectorAll('[data-sort-group="' + groupId + '"]');
+    var target = null;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] === excludeEl) continue;
+      var rect = items[i].getBoundingClientRect();
+      if (clientY >= rect.top && clientY <= rect.bottom) {
+        if (!target || Math.abs(clientY - (rect.top + rect.height / 2)) < Math.abs(clientY - (target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2))) {
+          target = items[i];
+        }
+      }
+    }
+    return target;
+  }
+
+  function doReorder(groupId, fromIdx, toIdx) {
+    var dataArray = getSortGroupData(groupId);
+    if (!dataArray || fromIdx >= dataArray.length) return;
+    var item = dataArray.splice(fromIdx, 1)[0];
+    dataArray.splice(toIdx, 0, item);
+    var renderFn = getRenderFn(groupId);
+    if (renderFn) renderFn();
+    saveToStorage();
+  }
+
+  // ---- Mouse Drag ----
+  document.addEventListener('dragstart', function(e) {
+    var handle = e.target.closest('.drag-handle, .drag-handle-cell');
+    if (!handle) return;
+    var sortable = handle.closest('[data-sort-group]');
+    if (!sortable) return;
+
+    dragInfo = {
+      groupId: sortable.dataset.sortGroup,
+      fromIdx: parseInt(sortable.dataset.sortIdx),
+      element: sortable,
+      container: sortable.parentElement
+    };
+
+    sortable.classList.add('dragging');
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      try {
+        var ghost = sortable.cloneNode(true);
+        ghost.style.position = 'absolute';
+        ghost.style.top = '-9999px';
+        ghost.style.opacity = '0';
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, 0, 0);
+        setTimeout(function() { ghost.remove(); }, 0);
+      } catch(ex) {}
+    }
+  });
+
+  document.addEventListener('dragover', function(e) {
+    if (!dragInfo) return;
+    e.preventDefault();
+    var target = e.target.closest('[data-sort-group="' + dragInfo.groupId + '"]');
+    clearIndicators(dragInfo.container);
+    if (!target || target === dragInfo.element) return;
+
+    var rect = target.getBoundingClientRect();
+    var midY = rect.top + rect.height / 2;
+    target.classList.add('drop-target');
+    if (e.clientY < midY) {
+      target.style.setProperty('--drop-pos', 'above');
+    } else {
+      target.style.setProperty('--drop-pos', 'below');
+    }
+  });
+
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (!dragInfo) return;
+    clearIndicators(dragInfo.container);
+    if (dragInfo.element) dragInfo.element.classList.remove('dragging');
+
+    var target = e.target.closest('[data-sort-group="' + dragInfo.groupId + '"]');
+    if (!target || target === dragInfo.element) { dragInfo = null; return; }
+
+    var fromIdx = dragInfo.fromIdx;
+    var rect = target.getBoundingClientRect();
+    var midY = rect.top + rect.height / 2;
+    var toIdx = parseInt(target.dataset.sortIdx);
+    if (e.clientY > midY) toIdx++;
+    if (toIdx > fromIdx) toIdx--;
+
+    if (fromIdx !== toIdx) {
+      doReorder(dragInfo.groupId, fromIdx, toIdx);
+    }
+    dragInfo = null;
+  });
+
+  document.addEventListener('dragend', function(e) {
+    if (dragInfo) {
+      clearIndicators(dragInfo.container);
+      if (dragInfo.element) dragInfo.element.classList.remove('dragging');
+    }
+    dragInfo = null;
+  });
+
+  // ---- Touch Drag ----
+  document.addEventListener('touchstart', function(e) {
+    var handle = e.target.closest('.drag-handle, .drag-handle-cell');
+    if (!handle) return;
+    var sortable = handle.closest('[data-sort-group]');
+    if (!sortable) return;
+
+    clearTimeout(longPressTimer);
+    touchInfo = {
+      groupId: sortable.dataset.sortGroup,
+      fromIdx: parseInt(sortable.dataset.sortIdx),
+      element: sortable,
+      container: sortable.parentElement,
+      startY: e.touches[0].clientY,
+      startX: e.touches[0].clientX,
+      active: false
+    };
+
+    longPressTimer = setTimeout(function() {
+      if (!touchInfo) return;
+      touchInfo.active = true;
+      touchInfo.element.classList.add('dragging');
+
+      touchClone = touchInfo.element.cloneNode(true);
+      touchClone.style.position = 'fixed';
+      touchClone.style.zIndex = '9999';
+      touchClone.style.opacity = '0.85';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.width = touchInfo.element.getBoundingClientRect().width + 'px';
+      touchClone.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
+      touchClone.style.border = '2px solid #6b7db3';
+      touchClone.style.borderRadius = '8px';
+      touchClone.style.background = '#fff';
+      document.body.appendChild(touchClone);
+    }, 350);
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!touchInfo) return;
+    if (!touchInfo.active) {
+      var dy = Math.abs(e.touches[0].clientY - touchInfo.startY);
+      var dx = Math.abs(e.touches[0].clientX - touchInfo.startX);
+      if (dy > 8 || dx > 12) {
+        clearTimeout(longPressTimer);
+        touchInfo = null;
+      }
+      return;
+    }
+    e.preventDefault();
+
+    var clientY = e.touches[0].clientY;
+    if (touchClone) {
+      touchClone.style.left = '10px';
+      touchClone.style.top = (clientY - 30) + 'px';
+    }
+
+    clearIndicators(touchInfo.container);
+    var target = findTarget(touchInfo.container, touchInfo.groupId, clientY, touchInfo.element);
+    if (target) {
+      var rect = target.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      target.classList.add('drop-target');
+      target.style.setProperty('--drop-pos', clientY < midY ? 'above' : 'below');
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function(e) {
+    clearTimeout(longPressTimer);
+    if (touchClone) { touchClone.remove(); touchClone = null; }
+    if (!touchInfo || !touchInfo.active) { touchInfo = null; return; }
+
+    clearIndicators(touchInfo.container);
+    if (touchInfo.element) touchInfo.element.classList.remove('dragging');
+
+    var target = findTarget(touchInfo.container, touchInfo.groupId,
+      e.changedTouches[0].clientY, touchInfo.element);
+
+    if (target) {
+      var fromIdx = touchInfo.fromIdx;
+      var rect = target.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      var toIdx = parseInt(target.dataset.sortIdx);
+      if (e.changedTouches[0].clientY > midY) toIdx++;
+      if (toIdx > fromIdx) toIdx--;
+      if (fromIdx !== toIdx) {
+        doReorder(touchInfo.groupId, fromIdx, toIdx);
+      }
+    }
+    touchInfo = null;
+  });
+})();
+
+// ==================== 年份管理 ====================
+function getYearOptions() {
+  return Object.keys(allYearsData).sort();
+}
+
+function renderYearSelector() {
+  const sel = document.getElementById('yearSelect');
+  if (!sel) return;
+  const years = getYearOptions();
+  sel.innerHTML = years.map(y => `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}年</option>`).join('');
+}
+
+function switchYear(newYear) {
+  if (newYear === currentYear) return;
+  // Save current year data back
+  allYearsData[currentYear] = appData;
+  // Switch
+  currentYear = newYear;
+  appData = allYearsData[currentYear];
+  document.getElementById('headerTitle').textContent = appData.title || (currentYear + ' 存钱计划');
+  renderYearSelector();
+  currentMonth = '6';
+  document.getElementById('monthSelect').value = '6';
+  renderAll();
+}
+
+function calcYearEndCumulative(year) {
+  const yd = allYearsData[year];
+  if (!yd) return 0;
+  const opening = yd.overview ? (yd.overview.current || 0) : 0;
+  let total = 0;
+  for (let m = 1; m <= 12; m++) {
+    const md = yd.monthlyData && yd.monthlyData[String(m)];
+    if (!md) continue;
+    const incTotal = (md.incomeCategories || []).reduce((s, cat) =>
+      s + (cat.items || []).reduce((ss, item) => ss + tryParseAmount(item.amount), 0), 0);
+    const expTotal = (md.expenseCategories || []).reduce((s, cat) =>
+      s + (cat.items || []).reduce((ss, item) => ss + tryParseAmount(item.amount), 0), 0);
+    total += (incTotal - expTotal);
+  }
+  return opening + total;
+}
+
+function addNewYear() {
+  const newYearStr = prompt('请输入新年份（如 2027）：', String(parseInt(currentYear) + 1));
+  if (!newYearStr) return;
+  const newYear = newYearStr.trim();
+  if (!/^\d{4}$/.test(newYear)) { showToast('请输入有效的4位年份'); return; }
+  if (allYearsData[newYear]) { showToast(newYear + '年已存在'); return; }
+
+  // Save current year first
+  allYearsData[currentYear] = appData;
+
+  // Find the latest year before newYear to inherit from
+  const existingYears = getYearOptions().map(Number).sort((a,b) => a-b);
+  const prevYear = existingYears[existingYears.length - 1];
+
+  // Deep clone the previous year's data
+  const sourceData = allYearsData[String(prevYear)] || appData;
+  const newData = JSON.parse(JSON.stringify(sourceData));
+
+  // Calculate previous year's year-end cumulative for opening balance
+  const prevYearEnd = calcYearEndCumulative(String(prevYear));
+  newData.overview.current = prevYearEnd;
+  newData.title = newYear + ' 存钱计划';
+
+  // Clear monthly data for new year
+  newData.monthlyData = {};
+
+  allYearsData[newYear] = newData;
+  currentYear = newYear;
+  appData = allYearsData[newYear];
+
+  document.getElementById('headerTitle').textContent = newData.title;
+  renderYearSelector();
+  currentMonth = '6';
+  document.getElementById('monthSelect').value = '6';
+  renderAll();
+  saveToStorage();
+  showToast('已添加 ' + newYear + '年（开年进度 ¥' + prevYearEnd.toLocaleString() + '）');
+}
+
+function renderAll() {
+  renderOverview();
+  renderIncome();
+  renderLargeExpense();
+  renderDebt();
+  renderAllocation();
+  renderMonthly();
+  renderPlans();
+}
+
+// ==================== 事件处理 ====================
+
+// 标题编辑
+document.getElementById('headerTitle').addEventListener('blur', function() {
+  appData.title = this.textContent.trim() || '2026 存钱计划';
+  saveToStorage();
+});
+document.getElementById('headerTitle').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+});
+
+// 年度总览编辑
+document.getElementById('overviewCard').addEventListener('blur', function(e) {
+  const el = e.target.closest('[data-key]');
+  if (!el) return;
+  const key = el.dataset.key;
+  const raw = el.textContent.replace(/[¥,\s]/g, '');
+  const num = parseFloat(raw);
+  if (isNaN(num) || num < 0) {
+    el.textContent = formatAmount(key === 'overview.target' ? appData.overview.target : appData.overview.current);
+    return;
+  }
+  if (key === 'overview.target') appData.overview.target = num;
+  else if (key === 'overview.current') appData.overview.current = num;
+  if (!window._dragSortActive) { renderOverview(); renderAllocation(); renderMonthly(); }
+  saveToStorage();
+}, true);
+
+document.getElementById('overviewCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.closest('[data-key]')) {
+    e.preventDefault(); e.target.blur();
+  }
+}, true);
+
+// ==================== 收入来源（大类）事件 ====================
+document.getElementById('incomeCard').addEventListener('blur', function(e) {
+  // 大类名称
+  const catNameInput = e.target.closest('[data-field="income-cat-name"]');
+  if (catNameInput) {
+    const cat = catNameInput.closest('.income-cat');
+    if (!cat) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    if (catIdx >= appData.incomeCategories.length) return;
+    appData.incomeCategories[catIdx].name = catNameInput.value.trim() || appData.incomeCategories[catIdx].name;
+    if (!window._dragSortActive) renderIncome();
+    saveToStorage();
+    return;
+  }
+
+  // 小类目名称
+  const itemNameInput = e.target.closest('[data-field="income-item-name"]');
+  if (itemNameInput) {
+    const itemRow = itemNameInput.closest('.item-row');
+    const cat = itemNameInput.closest('.income-cat');
+    if (!cat || !itemRow) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const itemIdx = parseInt(itemRow.dataset.itemIdx);
+    if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
+    appData.incomeCategories[catIdx].items[itemIdx].name = itemNameInput.value.trim();
+    if (!window._dragSortActive) renderIncome();
+    saveToStorage();
+    return;
+  }
+
+  // 小类目金额
+  const itemAmtInput = e.target.closest('[data-field="income-item-amount"]');
+  if (itemAmtInput) {
+    const itemRow = itemAmtInput.closest('.item-row');
+    const cat = itemAmtInput.closest('.income-cat');
+    if (!cat || !itemRow) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const itemIdx = parseInt(itemRow.dataset.itemIdx);
+    if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
+    const raw = itemAmtInput.value.trim();
+    const num = parseFloat(raw.replace(/[¥,\s]/g, ''));
+    if (!isNaN(num)) {
+      appData.incomeCategories[catIdx].items[itemIdx].amount = num;
+    } else if (raw) {
+      appData.incomeCategories[catIdx].items[itemIdx].amount = raw;
+    } else {
+      appData.incomeCategories[catIdx].items[itemIdx].amount = 0;
+    }
+    if (!window._dragSortActive) renderIncome();
+    saveToStorage();
+    return;
+  }
+
+  // 小类目备注
+  const itemNoteInput = e.target.closest('[data-field="income-item-note"]');
+  if (itemNoteInput) {
+    const itemRow = itemNoteInput.closest('.item-row');
+    const cat = itemNoteInput.closest('.income-cat');
+    if (!cat || !itemRow) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const itemIdx = parseInt(itemRow.dataset.itemIdx);
+    if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
+    appData.incomeCategories[catIdx].items[itemIdx].note = itemNoteInput.value.trim();
+    if (!window._dragSortActive) renderIncome();
+    saveToStorage();
+    return;
+  }
+}, true);
+
+document.getElementById('incomeCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && (e.target.closest('[data-field="income-cat-name"]') || e.target.closest('[data-field="income-item-name"]') || e.target.closest('[data-field="income-item-amount"]') || e.target.closest('[data-field="income-item-note"]'))) {
+    e.preventDefault(); e.target.blur();
+  }
+}, true);
+
+document.getElementById('incomeCard').addEventListener('click', function(e) {
+  const addBtn = e.target.closest('[data-action="add-income-item"]');
+  if (addBtn) {
+    const cat = addBtn.closest('.income-cat');
+    if (!cat) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    if (catIdx >= appData.incomeCategories.length) return;
+    appData.incomeCategories[catIdx].items.push({ name: '', amount: 0 });
+    renderIncome();
+    saveToStorage();
+    return;
+  }
+
+  const delBtn = e.target.closest('[data-action="delete-income-item"]');
+  if (delBtn) {
+    const itemRow = delBtn.closest('.item-row');
+    const cat = delBtn.closest('.income-cat');
+    if (!cat || !itemRow) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const itemIdx = parseInt(itemRow.dataset.itemIdx);
+    if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
+    appData.incomeCategories[catIdx].items.splice(itemIdx, 1);
+    renderIncome();
+    saveToStorage();
+    return;
+  }
+});
+
+// ==================== 大额支出事件 ====================
+function handleLargeExpenseEdit(e) {
+  const row = e.target.closest('tr');
+  if (!row || row.dataset.idx === undefined) return;
+  const idx = parseInt(row.dataset.idx);
+  const field = e.target.dataset.field;
+  if (!field || idx >= appData.largeExpenses.length) return;
+  const raw = e.target.textContent.trim();
+
+  if (field === 'name' || field === 'note') {
+    appData.largeExpenses[idx][field] = raw;
+  } else if (field === 'amount') {
+    const cleaned = raw.replace(/[¥,\s]/g, '');
+    const num = parseFloat(cleaned);
+    appData.largeExpenses[idx].amount = isNaN(num) ? raw : num;
+  }
+  if (!window._dragSortActive) renderLargeExpense();
+  saveToStorage();
+}
+
+document.getElementById('largeExpenseCard').addEventListener('blur', function(e) {
+  if (e.target.closest('.editable')) handleLargeExpenseEdit(e);
+}, true);
+
+document.getElementById('largeExpenseCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.closest('.editable')) { e.preventDefault(); e.target.blur(); }
+}, true);
+
+document.getElementById('largeExpenseCard').addEventListener('click', function(e) {
+  const delBtn = e.target.closest('[data-action="delete"]');
+  if (delBtn) {
+    const row = delBtn.closest('tr');
+    if (!row || row.dataset.idx === undefined) return;
+    const idx = parseInt(row.dataset.idx);
+    appData.largeExpenses.splice(idx, 1);
+    renderLargeExpense();
+    saveToStorage();
+  }
+});
+
+// ==================== 欠款追踪事件 ====================
+function handleDebtEdit(e) {
+  const row = e.target.closest('tr');
+  if (!row || row.dataset.idx === undefined) return;
+  const idx = parseInt(row.dataset.idx);
+  const field = e.target.dataset.field;
+  if (!field || idx >= appData.debts.length) return;
+  const raw = e.target.textContent.trim();
+
+  if (field === 'name' || field === 'note') {
+    appData.debts[idx][field] = raw;
+  } else if (field === 'amount') {
+    const cleaned = raw.replace(/[¥,\s]/g, '');
+    const num = parseFloat(cleaned);
+    appData.debts[idx].amount = isNaN(num) ? raw : num;
+  } else if (field === 'months') {
+    const num = parseInt(raw);
+    appData.debts[idx].months = isNaN(num) || num < 1 ? 1 : num;
+  }
+  if (!window._dragSortActive) renderDebt();
+  saveToStorage();
+}
+
+document.getElementById('debtCard').addEventListener('blur', function(e) {
+  if (e.target.closest('.editable')) handleDebtEdit(e);
+}, true);
+document.getElementById('debtCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.closest('.editable')) { e.preventDefault(); e.target.blur(); }
+}, true);
+document.getElementById('debtCard').addEventListener('click', function(e) {
+  const delBtn = e.target.closest('[data-action="delete"]');
+  if (delBtn) {
+    const row = delBtn.closest('tr');
+    if (!row || row.dataset.idx === undefined) return;
+    const idx = parseInt(row.dataset.idx);
+    appData.debts.splice(idx, 1);
+    renderDebt();
+    saveToStorage();
+  }
+});
+
+// ==================== 存款计划事件 ====================
+function handleAllocationEdit(e) {
+  const row = e.target.closest('tr');
+  if (!row || row.dataset.idx === undefined) return;
+  const idx = parseInt(row.dataset.idx);
+  const field = e.target.dataset.field;
+  if (!field || idx >= appData.allocations.length) return;
+  const raw = e.target.textContent.trim();
+
+  if (field === 'name' || field === 'note') {
+    appData.allocations[idx][field] = raw;
+  } else if (field === 'currentAmount' || field === 'targetAmount') {
+    const cleaned = raw.replace(/[¥,\s]/g, '');
+    const num = parseFloat(cleaned);
+    appData.allocations[idx][field] = isNaN(num) ? 0 : num;
+  }
+  if (!window._dragSortActive) { renderAllocation(); renderMonthly(); }
+  saveToStorage();
+}
+
+document.getElementById('allocationCard').addEventListener('blur', function(e) {
+  if (e.target.closest('.editable')) handleAllocationEdit(e);
+}, true);
+document.getElementById('allocationCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.closest('.editable')) { e.preventDefault(); e.target.blur(); }
+}, true);
+document.getElementById('allocationCard').addEventListener('click', function(e) {
+  const delBtn = e.target.closest('[data-action="delete"]');
+  if (delBtn) {
+    const row = delBtn.closest('tr');
+    if (!row || row.dataset.idx === undefined) return;
+    const idx = parseInt(row.dataset.idx);
+    appData.allocations.splice(idx, 1);
+    renderAllocation();
+    renderMonthly();
+    saveToStorage();
+  }
+});
+
+// ==================== 月度收支事件 ====================
+
+// 大类折叠/展开
+document.getElementById('monthlyCard').addEventListener('click', function(e) {
+  // 内嵌存款分配：添加项目
+  const addAllocBtn = e.target.closest('[data-action="add-month-alloc"]');
+  if (addAllocBtn) {
+    const md = ensureMonthData(currentMonth);
+    if (!md.allocations) md.allocations = [];
+    md.allocations.push({ name: '新项目', currentAmount: 0, note: '' });
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+
+  const header = e.target.closest('[data-action="toggle-cat"]');
+  if (!header) return;
+  if (e.target.closest('input')) return;
+
+  const cat = header.closest('.month-category');
+  if (!cat) return;
+  const catIdx = parseInt(cat.dataset.catIdx);
+  const type = cat.dataset.type;
+  const data = ensureMonthData(currentMonth);
+  const categories = type === 'income' ? data.incomeCategories : data.expenseCategories;
+  if (catIdx >= categories.length) return;
+  categories[catIdx].collapsed = !categories[catIdx].collapsed;
+  renderMonthly();
+  saveToStorage();
+});
+
+// 大类名称编辑
+document.getElementById('monthlyCard').addEventListener('blur', function(e) {
+  const input = e.target.closest('[data-field="cat-name"]');
+  if (!input) return;
+  const cat = input.closest('.month-category');
+  if (!cat) return;
+  const catIdx = parseInt(cat.dataset.catIdx);
+  const type = cat.dataset.type;
+  const data = ensureMonthData(currentMonth);
+  const categories = type === 'income' ? data.incomeCategories : data.expenseCategories;
+  if (catIdx >= categories.length) return;
+  categories[catIdx].name = input.value.trim() || categories[catIdx].name;
+  if (!window._dragSortActive) renderMonthly();
+  saveToStorage();
+}, true);
+
+// 小类目名称、金额、备注编辑
+document.getElementById('monthlyCard').addEventListener('blur', function(e) {
+  const input = e.target.closest('[data-field="item-name"], [data-field="item-amount"], [data-field="item-note"]');
+  if (!input) return;
+  const itemRow = input.closest('.item-row');
+  if (!itemRow) return;
+  const cat = input.closest('.month-category');
+  if (!cat) return;
+  const catIdx = parseInt(cat.dataset.catIdx);
+  const itemIdx = parseInt(itemRow.dataset.itemIdx);
+  const type = cat.dataset.type;
+  const data = ensureMonthData(currentMonth);
+  const categories = type === 'income' ? data.incomeCategories : data.expenseCategories;
+  if (catIdx >= categories.length || itemIdx >= categories[catIdx].items.length) return;
+
+  if (input.dataset.field === 'item-name') {
+    categories[catIdx].items[itemIdx].name = input.value.trim();
+  } else if (input.dataset.field === 'item-note') {
+    categories[catIdx].items[itemIdx].note = input.value.trim();
+  } else if (input.dataset.field === 'item-amount') {
+    const raw = input.value.trim();
+    const num = parseFloat(raw.replace(/[¥,\s]/g, ''));
+    if (!isNaN(num)) {
+      categories[catIdx].items[itemIdx].amount = num;
+    } else if (raw) {
+      categories[catIdx].items[itemIdx].amount = raw;
+    } else {
+      categories[catIdx].items[itemIdx].amount = 0;
+    }
+  }
+  if (!window._dragSortActive) renderMonthly();
+  saveToStorage();
+}, true);
+
+// 月度存款分配编辑（alloc-current / alloc-note — 仅改月度独立数据，不同步顶部）
+document.getElementById('monthlyCard').addEventListener('blur', function(e) {
+  const input = e.target.closest('[data-field="alloc-current"], [data-field="alloc-note"]');
+  if (!input) return;
+  const allocItem = input.closest('.month-alloc-item');
+  if (!allocItem) return;
+  const allocIdx = parseInt(allocItem.dataset.allocIdx);
+  const data = ensureMonthData(currentMonth);
+  if (!data.allocations || allocIdx >= data.allocations.length) return;
+  const raw = input.value.trim();
+
+  if (input.dataset.field === 'alloc-current') {
+    const num = parseFloat(raw.replace(/[¥,\s]/g, ''));
+    if (!isNaN(num)) {
+      data.allocations[allocIdx].currentAmount = num;
+    } else if (raw) {
+      data.allocations[allocIdx].currentAmount = raw;
+    } else {
+      data.allocations[allocIdx].currentAmount = 0;
+    }
+  } else if (input.dataset.field === 'alloc-note') {
+    data.allocations[allocIdx].note = raw;
+  }
+  if (!window._dragSortActive) renderMonthly();
+  saveToStorage();
+}, true);
+
+// 按键 Enter 失焦
+document.getElementById('monthlyCard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && (e.target.closest('[data-field="item-name"]') || e.target.closest('[data-field="item-amount"]') || e.target.closest('[data-field="item-note"]') || e.target.closest('[data-field="cat-name"]') || e.target.closest('[data-field="alloc-current"]') || e.target.closest('[data-field="alloc-note"]'))) {
+    e.preventDefault(); e.target.blur();
+  }
+}, true);
+
+// 添加小类目 / 删除小类目 / 添加收入大类
+document.getElementById('monthlyCard').addEventListener('click', function(e) {
+  const addBtn = e.target.closest('[data-action="add-item"]');
+  if (addBtn) {
+    const cat = addBtn.closest('.month-category');
+    if (!cat) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const type = cat.dataset.type;
+    const data = ensureMonthData(currentMonth);
+    const categories = type === 'income' ? data.incomeCategories : data.expenseCategories;
+    if (catIdx >= categories.length) return;
+    categories[catIdx].items.push({ name: '', amount: 0 });
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+
+  const delBtn = e.target.closest('[data-action="delete-item"]');
+  if (delBtn) {
+    const itemRow = delBtn.closest('.item-row');
+    if (!itemRow) return;
+    const cat = delBtn.closest('.month-category');
+    if (!cat) return;
+    const catIdx = parseInt(cat.dataset.catIdx);
+    const itemIdx = parseInt(itemRow.dataset.itemIdx);
+    const type = cat.dataset.type;
+    const data = ensureMonthData(currentMonth);
+    const categories = type === 'income' ? data.incomeCategories : data.expenseCategories;
+    if (catIdx >= categories.length || itemIdx >= categories[catIdx].items.length) return;
+    categories[catIdx].items.splice(itemIdx, 1);
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+
+  const delAllocBtn = e.target.closest('[data-action="delete-month-alloc"]');
+  if (delAllocBtn) {
+    const allocItem = delAllocBtn.closest('.month-alloc-item');
+    if (!allocItem) return;
+    const allocIdx = parseInt(allocItem.dataset.allocIdx);
+    const md = ensureMonthData(currentMonth);
+    if (!md.allocations || allocIdx >= md.allocations.length) return;
+    md.allocations.splice(allocIdx, 1);
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+
+  const addCatBtn = e.target.closest('[data-action="add-income-cat"]');
+  if (addCatBtn) {
+    const data = ensureMonthData(currentMonth);
+    data.incomeCategories.push({ name: '新收入来源', collapsed: false, items: [] });
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+});
+
+// 月份切换
+document.getElementById('monthSelect').addEventListener('change', function() {
+  currentMonth = this.value;
+  renderMonthly();
+});
+
+// 添加行按钮（大额支出/欠款/存款分配）
+document.querySelectorAll('[data-table]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const table = this.dataset.table;
+    if (table === 'largeExpense') {
+      appData.largeExpenses.push({ name: '', amount: 0, note: '' });
+      renderLargeExpense();
+    } else if (table === 'debt') {
+      appData.debts.push({ name: '', amount: 0, months: 1, note: '' });
+      renderDebt();
+    } else if (table === 'allocation') {
+      appData.allocations.push({ name: '', currentAmount: 0, targetAmount: 0, note: '' });
+      renderAllocation();
+      renderMonthly();
+    }
+    saveToStorage();
+  });
+});
+
+// 未来计划编辑
+document.getElementById('planCard').addEventListener('input', function(e) {
+  const detail = e.target.closest('.plan-detail');
+  if (!detail) return;
+  const planKey = detail.dataset.plan;
+  if (!appData.futurePlans[planKey]) return;
+  if (e.target.classList.contains('plan-title-input')) {
+    const newTitle = e.target.value.trim() || appData.futurePlans[planKey].title;
+    appData.futurePlans[planKey].title = newTitle;
+    detail.querySelector('summary span').textContent = newTitle;
+  } else if (e.target.tagName === 'TEXTAREA') {
+    appData.futurePlans[planKey].content = e.target.value;
+  }
+  saveToStorage();
+});
+
+// ==================== 备份与恢复 ====================
+document.getElementById('btnSave').addEventListener('click', async function() {
+  allYearsData[currentYear] = appData;
+  const jsonStr = JSON.stringify(allYearsData, null, 2);
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const filename = `savings-backup-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.json`;
+
+  if (navigator.share && navigator.canShare) {
+    const file = new File([jsonStr], filename, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: '存钱计划备份' }); showToast('备份已分享'); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+  }
+
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('备份已下载');
+});
+
+document.getElementById('btnLoad').addEventListener('click', function() {
+  document.getElementById('backupFileInput').click();
+});
+
+document.getElementById('backupFileInput').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Accept both old flat format and new multi-year format
+      allYearsData = migrateAllData(data);
+      const years = Object.keys(allYearsData).sort();
+      currentYear = years[years.length - 1] || '2026';
+      appData = allYearsData[currentYear];
+      document.getElementById('headerTitle').textContent = appData.title || (currentYear + ' 存钱计划');
+      renderYearSelector();
+      document.getElementById('monthSelect').value = '6';
+      currentMonth = '6';
+      renderAll();
+      document.querySelectorAll('.plan-detail').forEach(detail => {
+        const planKey = detail.dataset.plan;
+        const plan = appData.futurePlans[planKey];
+        if (plan) {
+          detail.querySelector('.plan-title-input').value = plan.title;
+          detail.querySelector('textarea').value = plan.content || '';
+          detail.querySelector('summary span').textContent = plan.title;
+        }
+      });
+      saveToStorage();
+      showToast('备份已恢复');
+    } catch (err) { showToast('文件格式错误，无法导入'); }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// ==================== 初始化 ====================
+(async function init() {
+  await loadFromStorage();
+
+  // Ensure we have at least one year
+  if (Object.keys(allYearsData).length === 0) {
+    allYearsData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+
+  // Set current year to the latest year
+  const years = Object.keys(allYearsData).sort();
+  currentYear = years[years.length - 1] || '2026';
+  appData = allYearsData[currentYear];
+
+  // Ensure current year data exists
+  if (!appData || !appData.overview) {
+    appData = allYearsData[currentYear] = migrateData(DEFAULT_YEAR_DATA);
+  }
+
+  document.getElementById('headerTitle').textContent = appData.title || (currentYear + ' 存钱计划');
+  renderYearSelector();
+  document.getElementById('monthSelect').value = '6';
+  currentMonth = '6';
+
+  // Year selector change event
+  document.getElementById('yearSelect').addEventListener('change', function() {
+    switchYear(this.value);
+  });
+
+  // Add year button
+  document.getElementById('btnAddYear').addEventListener('click', addNewYear);
+
+  renderAll();
+  document.querySelectorAll('.plan-detail').forEach(detail => {
+    const planKey = detail.dataset.plan;
+    const plan = appData.futurePlans[planKey];
+    if (plan) {
+      detail.querySelector('.plan-title-input').value = plan.title;
+      detail.querySelector('textarea').value = plan.content || '';
+      detail.querySelector('summary span').textContent = plan.title;
+    }
+  });
+  showToast('数据已加载');
+})();
+</script>
+</body>
+</html>
