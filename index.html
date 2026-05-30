@@ -584,35 +584,88 @@ td.actions { text-align: center; width: 40px; white-space: nowrap; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 28px;
+  width: 20px;
+  height: auto;
   cursor: grab;
-  color: var(--text-tertiary);
-  font-size: 1rem;
+  color: #d5d0ca;
+  font-size: 0.8rem;
   user-select: none;
   flex-shrink: 0;
   letter-spacing: -1px;
   transition: color 0.15s;
+  opacity: 0.5;
 }
-.drag-handle:hover { color: var(--text-secondary); }
+.drag-handle:hover { color: #8c8c84; opacity: 1; }
 .drag-handle:active { cursor: grabbing; }
 
 .drag-handle-cell {
-  width: 32px;
+  width: 22px;
   text-align: center;
   vertical-align: middle;
-  padding: 8px 2px !important;
+  padding: 8px 1px !important;
   cursor: grab;
-  color: var(--text-tertiary);
-  font-size: 1rem;
+  color: #d5d0ca;
+  font-size: 0.8rem;
   user-select: none;
   letter-spacing: -1px;
+  opacity: 0.5;
+  transition: color 0.15s, opacity 0.15s;
 }
-.drag-handle-cell:hover { color: var(--text-secondary); }
+.drag-handle-cell:hover { color: #8c8c84; opacity: 1; }
 .drag-handle-cell span {
   display: inline-block;
   width: 100%;
   cursor: grab;
+}
+
+
+/* ========== 两行布局（小类目）========== */
+.item-row-2line {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px;
+}
+.item-row-2line .drag-handle {
+  margin-top: 4px;
+}
+.item-row-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.item-row-line1 {
+  width: 100%;
+}
+.item-row-line2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.item-note-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  background: var(--input-name-bg);
+  color: var(--text);
+  outline: none;
+  min-width: 45px;
+  resize: none;
+  min-height: 30px;
+  transition: border-color 0.15s;
+  line-height: 1.4;
+}
+.item-note-input:focus {
+  border-color: var(--text-tertiary);
+  background: #fff;
+}
+.item-note-input::placeholder {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
 }
 
 .dragging {
@@ -843,8 +896,19 @@ td.target-amount {
   font-family: var(--font-mono);
   font-weight: 500;
   text-align: right;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
   color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* ========== 表格备注列加宽 ========== */
+td.editable[data-field="note"] {
+  min-width: 80px;
+  max-width: 180px;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 0.8rem;
 }
 
 /* ========== Toast ========== */
@@ -874,6 +938,102 @@ td.target-amount {
   .overview-stat-value { font-size: 1.25rem; }
   .month-alloc-item-name { width: 58px; font-size: 0.78rem; }
   .month-alloc-current { width: 85px; }
+
+  /* 存款计划/大额支出/欠款追踪 手机端卡片布局 */
+  #allocationCard thead,
+  #largeExpenseCard thead,
+  #debtCard thead { display: none; }
+
+  #allocationCard tbody tr,
+  #largeExpenseCard tbody tr,
+  #debtCard tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--border);
+    gap: 4px;
+    align-items: center;
+  }
+
+  #allocationCard td,
+  #largeExpenseCard td,
+  #debtCard td {
+    display: block;
+    padding: 2px 4px;
+    border-bottom: none;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  #allocationCard td.drag-handle-cell,
+  #largeExpenseCard td.drag-handle-cell,
+  #debtCard td.drag-handle-cell {
+    width: 22px;
+    flex-shrink: 0;
+    padding: 2px 1px !important;
+  }
+
+  #allocationCard td[data-field="name"],
+  #largeExpenseCard td[data-field="name"],
+  #debtCard td[data-field="name"] {
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  #allocationCard td[data-field="currentAmount"],
+  #allocationCard td[data-field="targetAmount"] {
+    width: calc(50% - 20px);
+    font-size: 0.8rem;
+    text-align: left;
+  }
+  #allocationCard td.amount { text-align: left !important; }
+
+  #largeExpenseCard td[data-field="amount"],
+  #debtCard td[data-field="amount"],
+  #debtCard td[data-field="months"] {
+    width: calc(50% - 20px);
+    font-size: 0.8rem;
+  }
+
+  #allocationCard td[data-field="note"],
+  #largeExpenseCard td[data-field="note"],
+  #debtCard td[data-field="note"] {
+    width: 100%;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  #allocationCard td.actions,
+  #largeExpenseCard td.actions,
+  #debtCard td.actions {
+    width: auto;
+    margin-left: auto;
+  }
+
+  #debtCard td.computed {
+    width: calc(50% - 20px);
+    font-size: 0.78rem;
+  }
+
+  /* 汇总行保持正常 */
+  #allocationCard tfoot tr,
+  #largeExpenseCard tfoot tr,
+  #debtCard tfoot tr {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px 6px;
+    border-top: 2px solid var(--border);
+  }
+
+  /* 月度存款分配目标金额小字换行 */
+  .month-alloc-target {
+    font-size: 0.7rem !important;
+    white-space: normal !important;
+    word-break: break-word;
+    max-width: 70px;
+    line-height: 1.2;
+  }
 }
 </style>
 </head>
@@ -888,6 +1048,7 @@ td.target-amount {
       <div class="year-selector">
         <select id="yearSelect"></select>
         <button class="btn btn-sm" id="btnAddYear" title="添加年份">+</button>
+        <button class="btn btn-sm" id="btnDelYear" title="删除当前年份" style="color:var(--expense);border-color:transparent;background:transparent;font-size:0.85rem;">&#128465;</button>
       </div>
     </div>
     <div class="header-actions">
@@ -1394,15 +1555,21 @@ function renderIncome() {
 
     cat.items.forEach((item, itemIdx) => {
       const amtDisplay = displayAmount(item.amount);
-      html += `<div class="item-row" data-item-idx="${itemIdx}" data-sort-group="income-items-${catIdx}" data-sort-idx="${itemIdx}">
+      html += `<div class="item-row item-row-2line" data-item-idx="${itemIdx}" data-sort-group="income-items-${catIdx}" data-sort-idx="${itemIdx}">
         <span class="drag-handle" draggable="true">⋮⋮</span>
-        <input class="item-name-input" value="${escHtml(item.name)}" data-field="income-item-name" placeholder="名称">
-        <div class="item-amount-wrap">
-          <span class="item-amount-prefix">¥</span>
-          <input class="item-amount-input income" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="income-item-amount" placeholder="0">
+        <div class="item-row-content">
+          <div class="item-row-line1">
+            <input class="item-name-input" value="${escHtml(item.name)}" data-field="income-item-name" placeholder="名称">
+          </div>
+          <div class="item-row-line2">
+            <div class="item-amount-wrap">
+              <span class="item-amount-prefix">¥</span>
+              <input class="item-amount-input income" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="income-item-amount" placeholder="0">
+            </div>
+            <textarea class="item-note-input" data-field="income-item-note" placeholder="备注" rows="1">${escHtml(item.note || '')}</textarea>
+            <button class="btn-del" data-action="delete-income-item">✕</button>
+          </div>
         </div>
-        <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="income-item-note" placeholder="备注" style="flex:0.55;min-width:50px;">
-        <button class="btn-del" data-action="delete-income-item">✕</button>
       </div>`;
     });
 
@@ -1529,15 +1696,21 @@ function renderMonthlyCategories(containerId, categories, type) {
 
     cat.items.forEach((item, itemIdx) => {
       const amtDisplay = displayAmount(item.amount);
-      html += `<div class="item-row" data-item-idx="${itemIdx}" data-sort-group="monthly-${type}-${catIdx}" data-sort-idx="${itemIdx}">
+      html += `<div class="item-row item-row-2line" data-item-idx="${itemIdx}" data-sort-group="monthly-${type}-${catIdx}" data-sort-idx="${itemIdx}">
         <span class="drag-handle" draggable="true">⋮⋮</span>
-        <input class="item-name-input" value="${escHtml(item.name)}" data-field="item-name" placeholder="名称">
-        <div class="item-amount-wrap">
-          <span class="item-amount-prefix">¥</span>
-          <input class="item-amount-input ${amountClass}" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="item-amount" placeholder="0">
+        <div class="item-row-content">
+          <div class="item-row-line1">
+            <input class="item-name-input" value="${escHtml(item.name)}" data-field="item-name" placeholder="名称">
+          </div>
+          <div class="item-row-line2">
+            <div class="item-amount-wrap">
+              <span class="item-amount-prefix">¥</span>
+              <input class="item-amount-input ${amountClass}" value="${typeof amtDisplay === 'number' ? amtDisplay : amtDisplay}" data-field="item-amount" placeholder="0">
+            </div>
+            <textarea class="item-note-input" data-field="item-note" placeholder="备注" rows="1">${escHtml(item.note || '')}</textarea>
+            <button class="btn-del" data-action="delete-item">✕</button>
+          </div>
         </div>
-        <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="item-note" placeholder="备注" style="flex:0.55;min-width:50px;">
-        <button class="btn-del" data-action="delete-item">✕</button>
       </div>`;
     });
 
@@ -1607,7 +1780,7 @@ function renderMonthAllocation() {
           <input class="item-amount-input income" data-field="alloc-current" value="${typeof curDisplay === 'number' ? curDisplay : curDisplay}" placeholder="0">
         </div>
       </span>
-      <input class="item-name-input" value="${escHtml(item.note || '')}" data-field="alloc-note" placeholder="备注" style="flex:0.5;min-width:55px;">
+      <textarea class="item-note-input" data-field="alloc-note" placeholder="备注" rows="1" style="flex:1;min-width:55px;">${escHtml(item.note || '')}</textarea>
       <span class="month-alloc-target">目标 ${formatAmount(tgt)}</span>
       <button class="btn-del" data-action="delete-month-alloc">✕</button>
     </div>`;
@@ -2000,6 +2173,31 @@ function addNewYear() {
   showToast('已添加 ' + newYear + '年（开年进度 ¥' + prevYearEnd.toLocaleString() + '）');
 }
 
+function deleteCurrentYear() {
+  const years = getYearOptions();
+  if (years.length <= 1) {
+    showToast('至少需要保留一个年份');
+    return;
+  }
+  if (!confirm(`确定删除 ${currentYear} 年的所有数据吗？此操作不可恢复。`)) return;
+
+  const deletedYear = currentYear;
+  delete allYearsData[deletedYear];
+
+  // Switch to another year, prefer 2026
+  const remainingYears = Object.keys(allYearsData).sort();
+  currentYear = remainingYears.includes('2026') ? '2026' : remainingYears[0];
+  appData = allYearsData[currentYear];
+
+  document.getElementById('headerTitle').textContent = appData.title || (currentYear + ' 存钱计划');
+  renderYearSelector();
+  currentMonth = '6';
+  document.getElementById('monthSelect').value = '6';
+  renderAll();
+  saveToStorage();
+  showToast(deletedYear + ' 年已删除');
+}
+
 function renderAll() {
   renderOverview();
   renderIncome();
@@ -2114,7 +2312,9 @@ document.getElementById('incomeCard').addEventListener('blur', function(e) {
 }, true);
 
 document.getElementById('incomeCard').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && (e.target.closest('[data-field="income-cat-name"]') || e.target.closest('[data-field="income-item-name"]') || e.target.closest('[data-field="income-item-amount"]') || e.target.closest('[data-field="income-item-note"]'))) {
+  // Don't blur textarea notes on Enter (allow multiline)
+  if (e.key === 'Enter' && e.target.closest('[data-field="income-item-note"]') && e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Enter' && (e.target.closest('[data-field="income-cat-name"]') || e.target.closest('[data-field="income-item-name"]') || e.target.closest('[data-field="income-item-amount"]'))) {
     e.preventDefault(); e.target.blur();
   }
 }, true);
@@ -2377,7 +2577,9 @@ document.getElementById('monthlyCard').addEventListener('blur', function(e) {
 
 // 按键 Enter 失焦
 document.getElementById('monthlyCard').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && (e.target.closest('[data-field="item-name"]') || e.target.closest('[data-field="item-amount"]') || e.target.closest('[data-field="item-note"]') || e.target.closest('[data-field="cat-name"]') || e.target.closest('[data-field="alloc-current"]') || e.target.closest('[data-field="alloc-note"]'))) {
+  // Don't blur textarea notes on Enter (allow multiline)
+  if (e.key === 'Enter' && e.target.closest('[data-field="item-note"]') && e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Enter' && (e.target.closest('[data-field="item-name"]') || e.target.closest('[data-field="item-amount"]') || e.target.closest('[data-field="cat-name"]') || e.target.closest('[data-field="alloc-current"]') || e.target.closest('[data-field="alloc-note"]'))) {
     e.preventDefault(); e.target.blur();
   }
 }, true);
@@ -2544,6 +2746,15 @@ document.getElementById('backupFileInput').addEventListener('change', function()
   this.value = '';
 });
 
+
+// ==================== Textarea 自动高度 ====================
+document.addEventListener('input', function(e) {
+  if (e.target.classList.contains('item-note-input')) {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.max(30, e.target.scrollHeight) + 'px';
+  }
+});
+
 // ==================== 初始化 ====================
 (async function init() {
   await loadFromStorage();
@@ -2575,6 +2786,9 @@ document.getElementById('backupFileInput').addEventListener('change', function()
 
   // Add year button
   document.getElementById('btnAddYear').addEventListener('click', addNewYear);
+
+  // Delete year button
+  document.getElementById('btnDelYear').addEventListener('click', deleteCurrentYear);
 
   renderAll();
   document.querySelectorAll('.plan-detail').forEach(detail => {
