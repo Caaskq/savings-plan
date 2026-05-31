@@ -234,8 +234,9 @@ body {
 .allocation-summary-dashed { padding: 6px 12px; border-top: 1px dashed var(--border); margin-top: 4px; }
 .allocation-summary-dashed .summary-value { color: var(--expense); }
 
-#allocationCard .table-wrap { display: none; }
-#allocationCard table { display: none; }
+#allocationCard .table-wrap { display: block; }
+#allocationCard table { display: table; width: 100%; border-collapse: collapse; }
+#allocationCard thead { display: none; }
 
 /* ========== 年度总览（首页） ========== */
 .overview-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
@@ -1536,8 +1537,8 @@ function renderLargeExpense() {
     const amt = tryParseAmount(item.amount);
     total += amt;
     const amtDisplay = displayAmount(item.amount);
-    html += '<div data-idx="' + idx + '" data-sort-group="large-expense" data-sort-idx="' + idx + '" style="margin-bottom:4px;">' +
-      '<div class="item-row">' +
+    html += '<div data-idx="' + idx + '" data-sort-group="large-expense" data-sort-idx="' + idx + '" style="border-bottom:1px solid #f0ede8;margin-bottom:4px;">' +
+      '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
         '<span class="table-num">' + (idx + 1) + '</span>' +
         '<textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="名称" rows="1">' + escHtml(item.name) + '</textarea>' +
@@ -1571,8 +1572,8 @@ function renderDebt() {
     const amt = tryParseAmount(item.amount);
     total += amt;
     const amtDisplay = displayAmount(item.amount);
-    html += '<div data-idx="' + idx + '" data-sort-group="debt" data-sort-idx="' + idx + '" style="margin-bottom:4px;">' +
-      '<div class="item-row">' +
+    html += '<div data-idx="' + idx + '" data-sort-group="debt" data-sort-idx="' + idx + '" style="border-bottom:1px solid #f0ede8;margin-bottom:4px;">' +
+      '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
         '<span class="table-num">' + (idx + 1) + '</span>' +
         '<textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="欠款项目" rows="1">' + escHtml(item.name) + '</textarea>' +
