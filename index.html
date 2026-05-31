@@ -2740,29 +2740,30 @@ async function doSaveBackup() {
     String(now.getHours()).padStart(2, "0") + "-" +
     String(now.getMinutes()).padStart(2, "0");
   const filename = "存钱计划_" + datestr + ".json";
+  const url = URL.createObjectURL(blob);
 
+  // 方法1：navigator.share（触发 macOS 原生保存/分享对话框）
   try {
-    const handle = await window.showSaveFilePicker({
-      suggestedName: filename,
-      types: [{ description: "JSON", accept: { "application/json": [".json"] } }]
-    });
-    const writable = await handle.createWritable();
-    await writable.write(blob);
-    await writable.close();
-    showToast("备份已保存");
-  } catch (e) {
-    const reader = new FileReader();
-    reader.onload = function() {
-      const a = document.createElement("a");
-      a.href = reader.result;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function() { document.body.removeChild(a); }, 200);
+    const file = new File([blob], filename, { type: "application/json" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "存钱计划备份" });
       showToast("备份已保存");
-    };
-    reader.readAsDataURL(blob);
+      URL.revokeObjectURL(url);
+      return;
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") console.error(e);
   }
+
+  // 方法2：a.click 兜底
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  showToast("备份已下载");
 }
 
 async function doLoadBackup() {
