@@ -387,7 +387,7 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 .item-note-input::placeholder { color: var(--text-tertiary); font-size: 0.75rem; }
 
 textarea.item-name-input {
-  resize: none; min-height: 32px; line-height: 1.4; overflow: hidden;
+  resize: none; min-height: 32px; line-height: 1.4; overflow-y: auto; max-height: 80px;
 }
 
 .income-total-wrap {
@@ -502,7 +502,6 @@ tr.dragging td { opacity: 0.4; }
 }
 .month-alloc-item:last-child { border-bottom: none; }
 .month-alloc-line1 { display: flex; align-items: center; gap: 8px; }
-.month-alloc-line2 { display: flex; align-items: center; gap: 6px; padding-left: 32px; }
 .month-alloc-name-input {
   flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px;
   font-size: 0.85rem; font-family: inherit; background: var(--input-bg); color: var(--text);
@@ -513,6 +512,17 @@ tr.dragging td { opacity: 0.4; }
 .month-alloc-target {
   font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);
   white-space: nowrap; margin-left: auto; flex-shrink: 0;
+}
+.month-alloc-target-block {
+  display: flex; flex-direction: column; gap: 2px; margin-left: 4px; min-width: 70px;
+}
+.month-alloc-target-block .month-alloc-target {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap;
+}
+.month-alloc-target-block .item-note-input {
+  font-size: 0.72rem; min-height: 22px; width: 100%; border: 1px solid transparent;
+  border-radius: 4px; padding: 3px 6px; font-family: inherit; background: transparent;
+  color: var(--text-secondary); outline: none; resize: none;
 }
 
 .month-alloc-line2 .item-amount-wrap { width: 110px; }
@@ -549,7 +559,7 @@ details.plan-detail summary {
 }
 details.plan-detail summary::-webkit-details-marker { display: none; }
 details.plan-detail summary::after {
-  content: '\\25B8'; font-size: 0.7rem; color: var(--text-tertiary); transition: transform 0.2s;
+  content: '▸'; font-size: 0.7rem; color: var(--text-tertiary); transition: transform 0.2s;
 }
 details.plan-detail[open] summary::after { transform: rotate(90deg); }
 .plan-body { padding: 12px 14px 14px; }
@@ -783,6 +793,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
 
       <div class="month-section-title">
         <span>收入</span>
+        <button class="btn btn-add" data-action="add-income-item-month" style="font-size:0.78rem;margin-right:auto;margin-left:12px;">+ 收入项</button>
         <span class="month-section-total income" id="monthIncomeTotal">¥0</span>
       </div>
       <div class="month-income-items" id="monthIncomeItems"></div>
@@ -829,8 +840,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
         <span class="sub-spacer"></span>
         <span class="sub-name">项目</span>
         <span class="sub-amount">目前进度</span>
-        <span class="sub-amount">未来目标</span>
-        <span class="sub-note">备注</span>
+        <span class="sub-goal">未来目标</span>
         <span class="sub-actions"></span>
       </div>
       <div id="allocationBody"></div>
@@ -1483,7 +1493,7 @@ function renderIncome() {
       html += '<div style="margin-bottom:2px;border-bottom:1px solid #f0ede8;" data-item-idx="' + itemIdx + '" data-sort-group="income-items-' + catIdx + '" data-sort-idx="' + itemIdx + '">' +
         '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
           '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-          '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="income-item-name" placeholder="名称">' +
+          '<textarea class="item-name-input" data-field="income-item-name" placeholder="名称" rows="1">' + escHtml(item.name) + '</textarea>' +
           '<div class="item-amount-wrap">' +
             '<span class="item-amount-prefix">¥</span>' +
             '<input class="item-amount-input income" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="income-item-amount" placeholder="0">' +
@@ -1590,7 +1600,6 @@ function renderAllocation() {
     html += '<div data-idx="' + idx + '" data-sort-group="allocation" data-sort-idx="' + idx + '" style="margin-bottom:4px;">' +
       '<div class="allocation-item-row">' +
         '<span class="drag-handle sub-spacer" draggable="true" style="width:30px;display:flex;align-items:center;justify-content:center;">⋮⋮</span>' +
-        '<span class="table-num" style="width:24px;text-align:center;">' + (idx + 1) + '</span>' +
         '<div class="sub-name"><textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="项目" rows="1" style="width:100%;">' + escHtml(item.name) + '</textarea></div>' +
         '<div class="sub-amount"><input class="alloc-input" value="' + (typeof curDisplay === "number" ? curDisplay : curDisplay) + '" data-field="currentAmount" data-idx="' + idx + '" placeholder="目前金额"></div>' +
         '<div class="sub-goal"><input class="alloc-input" value="' + (typeof tgtDisplay === "number" ? tgtDisplay : tgtDisplay) + '" data-field="targetAmount" data-idx="' + idx + '" placeholder="目标金额"></div>' +
@@ -1664,7 +1673,7 @@ function renderMonthly() {
     incomeHtml += '<div data-item-idx="' + itemIdx + '" data-sort-group="monthly-income" data-sort-idx="' + itemIdx + '" style="margin-bottom:2px;border-bottom:1px solid #f0ede8;">' +
       '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-        '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称">' +
+        '<textarea class="item-name-input" data-field="item-name" placeholder="名称" rows="1">' + escHtml(item.name) + '</textarea>' +
         '<div class="item-amount-wrap">' +
           '<span class="item-amount-prefix">¥</span>' +
           '<input class="item-amount-input income" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
@@ -1676,7 +1685,6 @@ function renderMonthly() {
       '</div>' +
     '</div>';
   });
-  incomeHtml += '<div class="add-item-wrap"><button class="btn btn-add" data-action="add-income-item-month" style="font-size:0.8rem;">+ 添加收入项</button></div>';
   incomeContainer.innerHTML = incomeHtml;
   document.getElementById("monthIncomeTotal").textContent = formatAmount(incomeTotal);
   // Check for ranges in income items
@@ -1711,7 +1719,7 @@ function renderMonthly() {
       expHtml += '<div data-item-idx="' + itemIdx + '" data-sort-group="monthly-expense-' + catIdx + '" data-sort-idx="' + itemIdx + '" style="margin-bottom:2px;border-bottom:1px solid #f0ede8;">' +
         '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
           '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-          '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称">' +
+          '<textarea class="item-name-input" data-field="item-name" placeholder="名称" rows="1">' + escHtml(item.name) + '</textarea>' +
           '<div class="item-amount-wrap">' +
             '<span class="item-amount-prefix">¥</span>' +
             '<input class="item-amount-input expense" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
@@ -1780,15 +1788,15 @@ function renderMonthAllocation() {
       '<div class="month-alloc-line1">' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
         '<input class="month-alloc-name-input" value="' + escHtml(item.name) + '" data-field="alloc-name" placeholder="项目名称">' +
-        '<button class="btn-del" data-action="delete-month-alloc">✕</button>' +
-      '</div>' +
-      '<div class="month-alloc-line2">' +
         '<div class="item-amount-wrap" style="width:105px;">' +
           '<span class="item-amount-prefix">¥</span>' +
           '<input class="item-amount-input income" data-field="alloc-current" value="' + (typeof curDisplay === "number" ? curDisplay : curDisplay) + '" placeholder="金额">' +
         '</div>' +
-        '<textarea class="item-note-input" data-field="alloc-note" placeholder="备注" rows="1" style="flex:1;min-width:55px;">' + escHtml(item.note || "") + '</textarea>' +
-        '<span class="month-alloc-target">目标 ' + formatAmount(tgt) + '</span>' +
+        '<div class="month-alloc-target-block">' +
+          '<span class="month-alloc-target">目标 ' + formatAmount(tgt) + '</span>' +
+          '<textarea class="item-note-input" data-field="alloc-note" placeholder="备注" rows="1">' + escHtml(item.note || "") + '</textarea>' +
+        '</div>' +
+        '<button class="btn-del" data-action="delete-month-alloc">✕</button>' +
       '</div>' +
     '</div>';
   });
