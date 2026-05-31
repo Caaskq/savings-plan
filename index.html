@@ -194,18 +194,18 @@ body {
   border-bottom: 2px solid var(--border);
 }
 .allocation-subtitle-row .sub-spacer { width: 30px; flex-shrink: 0; }
-.allocation-subtitle-row .sub-name { flex: 1; min-width: 0; }
-.allocation-subtitle-row .sub-amount { width: 90px; text-align: right; flex-shrink: 0; }
-.allocation-subtitle-row .sub-goal { width: 90px; text-align: right; flex-shrink: 0; }
+.allocation-subtitle-row .sub-name { flex: 1.6; min-width: 0; text-align: left; }
+.allocation-subtitle-row .sub-amount { width: 78px; text-align: left; flex-shrink: 0; }
+.allocation-subtitle-row .sub-goal { width: 78px; text-align: left; flex-shrink: 0; }
 .allocation-subtitle-row .sub-actions { width: 36px; flex-shrink: 0; }
 
 .allocation-item-row {
   display: flex; align-items: flex-start; gap: 6px; padding: 8px 0; border-bottom: 1px solid #f0ede8; flex-wrap: wrap;
 }
 .allocation-item-row .sub-spacer { width: 30px; flex-shrink: 0; }
-.allocation-item-row .sub-name { flex: 1; min-width: 0; }
-.allocation-item-row .sub-amount { width: 90px; flex-shrink: 0; }
-.allocation-item-row .sub-goal { width: 90px; flex-shrink: 0; }
+.allocation-item-row .sub-name { flex: 1.6; min-width: 0; }
+.allocation-item-row .sub-amount { width: 78px; flex-shrink: 0; }
+.allocation-item-row .sub-goal { width: 78px; flex-shrink: 0; }
 .allocation-item-row .sub-actions { width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .allocation-item-note {
   width: 100%; padding-left: 36px; padding-top: 2px;
@@ -218,13 +218,18 @@ body {
 .allocation-item-note textarea:focus { border-color: var(--text-tertiary); background: #fff; }
 .allocation-item-note textarea::placeholder { color: var(--text-tertiary); font-size: 0.72rem; }
 
+.alloc-input-wrap {
+  display: flex; align-items: center; border: 1px solid transparent; border-radius: 6px;
+  background: var(--input-bg); transition: border-color 0.15s; padding: 0 2px 0 6px;
+}
+.alloc-input-wrap:focus-within { border-color: var(--text-tertiary); background: #fff; }
+.alloc-prefix { font-family: var(--font-mono); font-size: 0.8rem; color: var(--income); font-weight: 600; flex-shrink: 0; }
 .alloc-input {
-  width: 100%; font-size: 0.85rem; font-family: inherit; border: 1px solid transparent;
-  border-radius: 6px; padding: 7px 10px; outline: none; background: var(--input-bg); color: var(--text);
+  width: 100%; font-size: 0.82rem; font-family: inherit; border: none;
+  padding: 6px 4px; outline: none; background: transparent; color: var(--text);
   text-align: right; font-family: var(--font-mono); font-weight: 500;
 }
-.alloc-input:focus { border-color: var(--text-tertiary); background: #fff; }
-.alloc-input::placeholder { color: var(--text-tertiary); font-size: 0.78rem; }
+.alloc-input::placeholder { color: var(--text-tertiary); font-size: 0.76rem; }
 
 .allocation-summary-row {
   display: flex; justify-content: space-between; align-items: center; padding: 4px 12px;
@@ -312,7 +317,7 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 .table-num { width: 28px; text-align: center; color: var(--text-tertiary); font-size: 0.78rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ========== 收入大类结构（年度收入）========== */
-.income-cat { margin-bottom: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.income-cat { margin-bottom: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .income-cat-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--cat-header-bg); user-select: none; cursor: pointer;
 }
@@ -502,6 +507,12 @@ tr.dragging td { opacity: 0.4; }
 }
 .month-alloc-item:last-child { border-bottom: none; }
 .month-alloc-line1 { display: flex; align-items: center; gap: 8px; }
+.month-alloc-line2 { padding-left: 44px; padding-top: 2px; }
+.month-alloc-line2 .item-note-input {
+  width: 100%; font-size: 0.72rem; min-height: 22px; border: 1px solid transparent;
+  border-radius: 4px; padding: 3px 6px; font-family: inherit; background: transparent;
+  color: var(--text-secondary); outline: none; resize: none;
+}
 .month-alloc-name-input {
   flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px;
   font-size: 0.85rem; font-family: inherit; background: var(--input-bg); color: var(--text);
@@ -514,15 +525,13 @@ tr.dragging td { opacity: 0.4; }
   white-space: nowrap; margin-left: auto; flex-shrink: 0;
 }
 .month-alloc-target-block {
-  display: flex; flex-direction: column; gap: 2px; margin-left: 4px; min-width: 70px;
+  display: flex; flex-direction: column; gap: 1px; margin-left: 4px; min-width: 72px; flex-shrink: 0;
 }
 .month-alloc-target-block .month-alloc-target {
-  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap;
+  font-size: 0.65rem; color: var(--text-tertiary); white-space: nowrap; line-height: 1.2;
 }
-.month-alloc-target-block .item-note-input {
-  font-size: 0.72rem; min-height: 22px; width: 100%; border: 1px solid transparent;
-  border-radius: 4px; padding: 3px 6px; font-family: inherit; background: transparent;
-  color: var(--text-secondary); outline: none; resize: none;
+.month-alloc-target-block .month-alloc-target-val {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; font-weight: 500;
 }
 
 .month-alloc-line2 .item-amount-wrap { width: 110px; }
@@ -753,9 +762,12 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
         <div class="card-title">年度收入</div>
         <div class="card-title-total income" id="incomeGrandTotal">¥0</div>
       </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:0.82rem;color:var(--text-secondary);">类别管理</span>
+        <button class="btn btn-add-cat" id="btnAddIncomeCat" style="font-size:0.78rem;">+ 添加大类目</button>
+      </div>
       <div id="incomeCategories"></div>
       <div class="income-total-wrap" id="incomeTotal"></div>
-      <button class="btn btn-add-cat" id="btnAddIncomeCat" style="margin-top:8px;width:100%;">+ 添加大类目</button>
     </div>
 
     <div class="card" id="largeExpenseCard">
@@ -852,28 +864,24 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
       <details class="plan-detail" data-plan="basic">
         <summary><span>基础版</span></summary>
         <div class="plan-body">
-          <input class="plan-title-input" value="基础版" placeholder="计划标题">
           <textarea placeholder="输入计划内容..."></textarea>
         </div>
       </details>
       <details class="plan-detail" data-plan="advanced1">
         <summary><span>进阶版1</span></summary>
         <div class="plan-body">
-          <input class="plan-title-input" value="进阶版1" placeholder="计划标题">
           <textarea placeholder="输入计划内容..."></textarea>
         </div>
       </details>
       <details class="plan-detail" data-plan="advanced2">
         <summary><span>进阶版2</span></summary>
         <div class="plan-body">
-          <input class="plan-title-input" value="进阶版2" placeholder="计划标题">
           <textarea placeholder="输入计划内容..."></textarea>
         </div>
       </details>
       <details class="plan-detail" data-plan="aggressive">
         <summary><span>激进版</span></summary>
         <div class="plan-body">
-          <input class="plan-title-input" value="激进版" placeholder="计划标题">
           <textarea placeholder="输入计划内容..."></textarea>
         </div>
       </details>
@@ -1601,8 +1609,8 @@ function renderAllocation() {
       '<div class="allocation-item-row">' +
         '<span class="drag-handle sub-spacer" draggable="true" style="width:30px;display:flex;align-items:center;justify-content:center;">⋮⋮</span>' +
         '<div class="sub-name"><textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="项目" rows="1" style="width:100%;">' + escHtml(item.name) + '</textarea></div>' +
-        '<div class="sub-amount"><input class="alloc-input" value="' + (typeof curDisplay === "number" ? curDisplay : curDisplay) + '" data-field="currentAmount" data-idx="' + idx + '" placeholder="目前金额"></div>' +
-        '<div class="sub-goal"><input class="alloc-input" value="' + (typeof tgtDisplay === "number" ? tgtDisplay : tgtDisplay) + '" data-field="targetAmount" data-idx="' + idx + '" placeholder="目标金额"></div>' +
+        '<div class="sub-amount"><div class="alloc-input-wrap"><span class="alloc-prefix">¥</span><input class="alloc-input" value="' + (typeof curDisplay === "number" ? curDisplay : curDisplay) + '" data-field="currentAmount" data-idx="' + idx + '" placeholder="目前金额"></div></div>' +
+        '<div class="sub-goal"><div class="alloc-input-wrap"><span class="alloc-prefix">¥</span><input class="alloc-input" value="' + (typeof tgtDisplay === "number" ? tgtDisplay : tgtDisplay) + '" data-field="targetAmount" data-idx="' + idx + '" placeholder="目标金额"></div></div>' +
         '<div class="sub-actions"><button class="btn-del" data-action="delete-allocation" data-idx="' + idx + '">✕</button></div>' +
       '</div>' +
       '<div class="allocation-item-note">' +
@@ -1788,15 +1796,18 @@ function renderMonthAllocation() {
       '<div class="month-alloc-line1">' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
         '<input class="month-alloc-name-input" value="' + escHtml(item.name) + '" data-field="alloc-name" placeholder="项目名称">' +
-        '<div class="item-amount-wrap" style="width:105px;">' +
+        '<div class="item-amount-wrap" style="width:100px;">' +
           '<span class="item-amount-prefix">¥</span>' +
           '<input class="item-amount-input income" data-field="alloc-current" value="' + (typeof curDisplay === "number" ? curDisplay : curDisplay) + '" placeholder="金额">' +
         '</div>' +
         '<div class="month-alloc-target-block">' +
-          '<span class="month-alloc-target">目标 ' + formatAmount(tgt) + '</span>' +
-          '<textarea class="item-note-input" data-field="alloc-note" placeholder="备注" rows="1">' + escHtml(item.note || "") + '</textarea>' +
+          '<span class="month-alloc-target">目标</span>' +
+          '<span class="month-alloc-target-val">' + formatAmount(tgt) + '</span>' +
         '</div>' +
         '<button class="btn-del" data-action="delete-month-alloc">✕</button>' +
+      '</div>' +
+      '<div class="month-alloc-line2">' +
+        '<textarea class="item-note-input" data-field="alloc-note" placeholder="备注" rows="1">' + escHtml(item.note || "") + '</textarea>' +
       '</div>' +
     '</div>';
   });
@@ -1843,7 +1854,6 @@ function renderPlans() {
     const plan = appData.futurePlans[planKey];
     if (!plan) return;
     detail.querySelector("summary span").textContent = plan.title;
-    detail.querySelector(".plan-title-input").value = plan.title;
     detail.querySelector("textarea").value = plan.content || "";
   });
 }
@@ -2691,16 +2701,6 @@ document.getElementById("monthSelect").addEventListener("change", function() {
 // ==================== 未来计划事件 ====================
 var planCard = document.getElementById("planCard");
 planCard.addEventListener("blur", function(e) {
-  var input = e.target.closest(".plan-title-input");
-  if (input) {
-    var detail = input.closest(".plan-detail");
-    if (!detail) return;
-    var planKey = detail.dataset.plan;
-    appData.futurePlans[planKey].title = input.value.trim();
-    detail.querySelector("summary span").textContent = appData.futurePlans[planKey].title;
-    saveToStorage();
-    return;
-  }
   var textarea = e.target.closest("textarea");
   if (textarea) {
     var detail = textarea.closest(".plan-detail");
