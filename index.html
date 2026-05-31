@@ -128,10 +128,22 @@ body {
   display: flex; align-items: center; gap: 8px;
 }
 
-.card-subtitle {
-  font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
-  padding: 6px 0; margin-bottom: 4px; border-bottom: 1px solid var(--border);
+/* ========== 存款计划子标题行 ========== */
+.allocation-subtitle-row {
+  display: flex; align-items: center; font-size: 0.82rem; font-weight: 600;
+  color: var(--text-secondary); padding: 6px 0; margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
 }
+.allocation-subtitle-row .sub-spacer { width: 24px; flex-shrink: 0; }
+.allocation-subtitle-row .sub-name { flex: 1; min-width: 0; }
+.allocation-subtitle-row .sub-amount { width: 85px; text-align: right; flex-shrink: 0; }
+.allocation-subtitle-row .sub-note { flex: 1; min-width: 0; }
+.allocation-subtitle-row .sub-actions { width: 36px; flex-shrink: 0; }
+
+/* 存款计划表格不横向滚动 */
+#allocationCard .table-wrap { overflow-x: visible; }
+#allocationCard td.amount input { max-width: 85px; }
+#allocationCard td.editable-input textarea { max-width: 140px; }
 
 /* ========== 年度总览 ========== */
 .overview-stats { display: flex; gap: 14px; margin-bottom: 14px; }
@@ -254,6 +266,11 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 }
 .item-note-input:focus { border-color: var(--text-tertiary); background: #fff; }
 .item-note-input::placeholder { color: var(--text-tertiary); font-size: 0.75rem; }
+
+/* textarea for name fields (大额支出/欠款追踪) */
+textarea.item-name-input {
+  resize: none; min-height: 32px; line-height: 1.4; overflow: hidden;
+}
 
 .income-total-wrap {
   display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; margin-top: 8px;
@@ -545,8 +562,14 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
   <!-- 存款计划 -->
   <div class="card" id="allocationCard">
     <div class="card-title">存款计划</div>
-    <div class="card-subtitle">目前进度</div>
-    <div class="card-subtitle">未来目标</div>
+    <div class="allocation-subtitle-row">
+      <span class="sub-spacer"></span>
+      <span class="sub-name">项目</span>
+      <span class="sub-amount">目前进度</span>
+      <span class="sub-amount">未来目标</span>
+      <span class="sub-note">备注</span>
+      <span class="sub-actions"></span>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th class="drag-handle-cell"></th><th>项目</th><th class="amount">目前金额</th><th class="amount">目标金额</th><th>备注</th><th class="actions"></th></tr></thead>
@@ -1033,12 +1056,12 @@ function renderLargeExpense() {
     html += '<div class="item-row" data-idx="' + idx + '" data-sort-group="large-expense" data-sort-idx="' + idx + '">' +
       '<span class="drag-handle" draggable="true">⋮⋮</span>' +
       '<span class="table-num">' + (idx + 1) + '</span>' +
-      '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="name" data-idx="' + idx + '" placeholder="名称" style="flex:1;">' +
+      '<textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="名称" style="flex:1;" rows="1">' + escHtml(item.name) + '</textarea>' +
       '<div class="item-amount-wrap" style="width:115px;">' +
         '<span class="item-amount-prefix">¥</span>' +
         '<input class="item-amount-input expense" value="' + (typeof amtDisplay === 'number' ? amtDisplay : amtDisplay) + '" data-field="amount" data-idx="' + idx + '" placeholder="金额">' +
       '</div>' +
-      '<input class="item-note-input" value="' + escHtml(item.note || '') + '" data-field="note" data-idx="' + idx + '" placeholder="备注" style="max-width:120px;">' +
+      '<textarea class="item-note-input" data-field="note" data-idx="' + idx + '" placeholder="备注" style="max-width:120px;" rows="1">' + escHtml(item.note || '') + '</textarea>' +
       '<button class="btn-del" data-action="delete-large-expense" data-idx="' + idx + '">✕</button>' +
     '</div>';
   });
@@ -1064,12 +1087,12 @@ function renderDebt() {
     html += '<div class="item-row" data-idx="' + idx + '" data-sort-group="debt" data-sort-idx="' + idx + '">' +
       '<span class="drag-handle" draggable="true">⋮⋮</span>' +
       '<span class="table-num">' + (idx + 1) + '</span>' +
-      '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="name" data-idx="' + idx + '" placeholder="欠款项目" style="flex:1;">' +
+      '<textarea class="item-name-input" data-field="name" data-idx="' + idx + '" placeholder="欠款项目" style="flex:1;" rows="1">' + escHtml(item.name) + '</textarea>' +
       '<div class="item-amount-wrap" style="width:115px;">' +
         '<span class="item-amount-prefix">¥</span>' +
         '<input class="item-amount-input expense" value="' + (typeof amtDisplay === 'number' ? amtDisplay : amtDisplay) + '" data-field="amount" data-idx="' + idx + '" placeholder="欠款金额">' +
       '</div>' +
-      '<input class="item-note-input" value="' + escHtml(item.note || '') + '" data-field="note" data-idx="' + idx + '" placeholder="备注" style="max-width:120px;">' +
+      '<textarea class="item-note-input" data-field="note" data-idx="' + idx + '" placeholder="备注" style="max-width:120px;" rows="1">' + escHtml(item.note || '') + '</textarea>' +
       '<button class="btn-del" data-action="delete-debt" data-idx="' + idx + '">✕</button>' +
     '</div>';
   });
@@ -2209,7 +2232,7 @@ document.getElementById('backupFileInput').addEventListener('change', function()
 
 // ==================== Textarea 自动高度 ====================
 document.addEventListener('input', function(e) {
-  if (e.target.classList.contains('item-note-input')) {
+  if (e.target.classList.contains('item-note-input') || (e.target.tagName === 'TEXTAREA' && e.target.classList.contains('item-name-input'))) {
     e.target.style.height = 'auto';
     e.target.style.height = Math.max(30, e.target.scrollHeight) + 'px';
   }
