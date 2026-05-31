@@ -401,7 +401,6 @@ textarea.item-name-input {
 }
 .income-total-label { font-size: 0.9rem; color: var(--text); }
 .income-total-value { font-size: 1.1rem; font-family: var(--font-mono); color: var(--income); }
-#incomeTotal.income-total-wrap { display: none; }
 
 /* ========== 月度收支模板 ========== */
 .month-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
@@ -757,7 +756,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
 
   <!-- ========== 标签页：目标 ========== -->
   <div class="tab-content" data-tab="goals">
-    <div id="incomeCard" style="margin-bottom:14px;">
+    <div class="card" id="incomeCard" style="margin-bottom:14px;">
       <div class="card-title-with-total" style="padding:0 2px;margin-bottom:10px;">
         <div class="card-title">年度收入</div>
         <div class="card-title-total income" id="incomeGrandTotal">¥0</div>
@@ -1519,6 +1518,8 @@ function renderIncome() {
 
   container.innerHTML = html;
   if (grandTotalEl) grandTotalEl.textContent = formatAmount(grandTotal);
+  var incomeTotal = document.getElementById("incomeTotal");
+  if (incomeTotal) incomeTotal.innerHTML = '<span class="income-total-label">收入合计</span><span class="income-total-value">' + formatAmount(grandTotal) + '</span>';
 }
 
 function renderLargeExpense() {
