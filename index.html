@@ -169,6 +169,23 @@ body {
   margin-bottom: 14px;
 }
 .allocation-header-row .card-title { margin-bottom: 0; }
+.card-title-with-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.card-title-with-total .card-title { margin-bottom: 0; }
+.card-title-total {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; white-space: nowrap;
+}
+.card-title-total.income { color: var(--income); }
+.card-title-total.expense { color: var(--expense); }
+
+/* 存款计划 subtitle + add button row */
+.allocation-header-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.allocation-header-row .card-title { margin-bottom: 0; }
 
 /* ========== 存款计划子标题行 ========== */
 .allocation-subtitle-row {
@@ -300,8 +317,10 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 /* ========== 收入大类结构（年度收入）========== */
 .income-cat { margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .income-cat-header {
-  display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--cat-header-bg); user-select: none;
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--cat-header-bg); user-select: none; cursor: pointer;
 }
+.income-cat-header:hover { opacity: 0.9; }
+.collapse-icon { font-size: 0.7rem; color: var(--text-tertiary); width: 16px; text-align: center; flex-shrink: 0; }
 .income-cat-name {
   flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text); border: none;
   background: transparent; outline: none; font-family: inherit; min-width: 60px; padding: 2px 4px; border-radius: 4px;
@@ -380,6 +399,7 @@ textarea.item-name-input {
 }
 .income-total-label { font-size: 0.9rem; color: var(--text); }
 .income-total-value { font-size: 1.1rem; font-family: var(--font-mono); color: var(--income); }
+#incomeTotal.income-total-wrap { display: none; }
 
 /* ========== 月度收支模板 ========== */
 .month-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
@@ -1460,7 +1480,6 @@ function renderOverview() {
 
 function renderIncome() {
   const container = document.getElementById("incomeCategories");
-  const totalWrap = document.getElementById("incomeTotal");
   const grandTotalEl = document.getElementById("incomeGrandTotal");
   let grandTotal = 0;
   let html = "";
@@ -1468,19 +1487,23 @@ function renderIncome() {
   appData.incomeCategories.forEach((cat, catIdx) => {
     const catTotal = cat.items.reduce((s, item) => s + tryParseAmount(item.amount), 0);
     grandTotal += catTotal;
+    const collapsed = cat._collapsed || false;
+    const collapseIcon = collapsed ? '▶' : '▼';
 
     html += '<div class="income-cat" data-cat-idx="' + catIdx + '">' +
-      '<div class="income-cat-header">' +
+      '<div class="income-cat-header" data-action="toggle-income-cat">' +
+        '<span class="collapse-icon" style="margin-right:4px;">' + collapseIcon + '</span>' +
         '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-        '<input class="income-cat-name" value="' + escHtml(cat.name) + '" data-field="income-cat-name" placeholder="大类名称">' +
+        '<input class="income-cat-name" value="' + escHtml(cat.name) + '" data-field="income-cat-name" placeholder="大类名称" style="flex:2;">' +
+        '<span class="income-cat-subtotal-icon" style="font-family:var(--font-mono);font-weight:600;font-size:0.85rem;color:var(--income);white-space:nowrap;margin-right:8px;">' + formatAmount(catTotal) + '</span>' +
         '<button class="btn-del-cat" data-action="delete-income-cat">×删除</button>' +
       '</div>' +
-      '<div class="income-cat-body"><div class="income-cat-items">';
+      '<div class="income-cat-body"' + (collapsed ? ' style="display:none;"' : '') + '><div class="income-cat-items">';
 
     cat.items.forEach((item, itemIdx) => {
       const amtDisplay = displayAmount(item.amount);
-      html += '<div style="margin-bottom:4px;">' +
-        '<div class="item-row" data-item-idx="' + itemIdx + '" data-sort-group="income-items-' + catIdx + '" data-sort-idx="' + itemIdx + '">' +
+      html += '<div style="margin-bottom:2px;border-bottom:1px solid #f0ede8;" data-item-idx="' + itemIdx + '" data-sort-group="income-items-' + catIdx + '" data-sort-idx="' + itemIdx + '">' +
+        '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
           '<span class="drag-handle" draggable="true">⋮⋮</span>' +
           '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="income-item-name" placeholder="名称">' +
           '<div class="item-amount-wrap">' +
@@ -1488,23 +1511,18 @@ function renderIncome() {
             '<input class="item-amount-input income" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="income-item-amount" placeholder="0">' +
           '</div>' +
           '<button class="btn-del" data-action="delete-income-item">✕</button>' +
-        '</div>';
-      // Note on separate line
-      html += '<div style="padding-left:32px;padding-bottom:4px;">' +
-        '<textarea class="item-note-input" data-field="income-item-note" placeholder="备注" rows="1" style="width:100%;">' + escHtml(item.note || "") + '</textarea>' +
-      '</div></div>';
+        '</div>' +
+        '<div style="padding-left:32px;padding-bottom:4px;">' +
+          '<textarea class="item-note-input" data-field="income-item-note" placeholder="备注" rows="1" style="width:100%;">' + escHtml(item.note || "") + '</textarea>' +
+        '</div>' +
+      '</div>';
     });
 
-    html += '<div class="add-item-wrap"><button class="btn btn-add btn-add-cat" data-action="add-income-item" style="margin-top:0;">+ 小类目</button></div>' +
-      '</div></div>' +
-      '<div class="income-total-wrap" style="margin-top:0;margin-bottom:12px;">' +
-        '<span class="income-total-label">收入合计</span>' +
-        '<span class="income-total-value">' + formatAmount(catTotal) + '</span>' +
-      '</div>';
+    html += '<div class="add-item-wrap"><button class="btn btn-add btn-add-cat" data-action="add-income-item" style="margin-top:4px;font-size:0.8rem;">+ 小类目</button></div>' +
+      '</div></div>';
   });
 
   container.innerHTML = html;
-  totalWrap.innerHTML = '<span class="income-total-label">总收入合计</span><span class="income-total-value">' + formatAmount(grandTotal) + '</span>';
   if (grandTotalEl) grandTotalEl.textContent = formatAmount(grandTotal);
 }
 
@@ -1665,20 +1683,29 @@ function renderMonthly() {
     const amt = tryParseAmount(item.amount);
     incomeTotal += amt;
     const amtDisplay = displayAmount(item.amount);
-    incomeHtml += '<div class="item-row" data-item-idx="' + itemIdx + '" data-sort-group="monthly-income" data-sort-idx="' + itemIdx + '">' +
-      '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-      '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称" style="flex:2;">' +
-      '<div class="item-amount-wrap">' +
-        '<span class="item-amount-prefix">¥</span>' +
-        '<input class="item-amount-input income" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
+    incomeHtml += '<div data-item-idx="' + itemIdx + '" data-sort-group="monthly-income" data-sort-idx="' + itemIdx + '" style="margin-bottom:2px;border-bottom:1px solid #f0ede8;">' +
+      '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
+        '<span class="drag-handle" draggable="true">⋮⋮</span>' +
+        '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称">' +
+        '<div class="item-amount-wrap">' +
+          '<span class="item-amount-prefix">¥</span>' +
+          '<input class="item-amount-input income" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
+        '</div>' +
+        '<button class="btn-del" data-action="delete-income-item-month">✕</button>' +
       '</div>' +
-      '<textarea class="item-note-input" data-field="item-note" placeholder="备注" rows="1">' + escHtml(item.note || "") + '</textarea>' +
-      '<button class="btn-del" data-action="delete-income-item-month">✕</button>' +
+      '<div style="padding-left:32px;padding-bottom:4px;">' +
+        '<textarea class="item-note-input" data-field="item-note" placeholder="备注" rows="1" style="width:100%;">' + escHtml(item.note || "") + '</textarea>' +
+      '</div>' +
     '</div>';
   });
-  incomeHtml += '<div class="add-item-wrap"><button class="btn btn-add" data-action="add-income-item-month">+ 添加收入项</button></div>';
+  incomeHtml += '<div class="add-item-wrap"><button class="btn btn-add" data-action="add-income-item-month" style="font-size:0.8rem;">+ 添加收入项</button></div>';
   incomeContainer.innerHTML = incomeHtml;
   document.getElementById("monthIncomeTotal").textContent = formatAmount(incomeTotal);
+  // Check for ranges in income items
+  var incResult = sumWithRanges(data.incomeItems, "amount");
+  if (incResult.hasRange) {
+    document.getElementById("monthIncomeTotal").textContent = formatAmountRange(incResult);
+  }
   // Check for ranges in income items
   var incResult = sumWithRanges(data.incomeItems, "amount");
   if (incResult.hasRange) {
@@ -1703,22 +1730,34 @@ function renderMonthly() {
 
     cat.items.forEach((item, itemIdx) => {
       const amtDisplay = displayAmount(item.amount);
-      expHtml += '<div class="item-row" data-item-idx="' + itemIdx + '" data-sort-group="monthly-expense-' + catIdx + '" data-sort-idx="' + itemIdx + '">' +
-        '<span class="drag-handle" draggable="true">⋮⋮</span>' +
-        '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称" style="flex:2;">' +
-        '<div class="item-amount-wrap">' +
-          '<span class="item-amount-prefix">¥</span>' +
-          '<input class="item-amount-input expense" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
+      expHtml += '<div data-item-idx="' + itemIdx + '" data-sort-group="monthly-expense-' + catIdx + '" data-sort-idx="' + itemIdx + '" style="margin-bottom:2px;border-bottom:1px solid #f0ede8;">' +
+        '<div class="item-row" style="border-bottom:none;padding-bottom:2px;">' +
+          '<span class="drag-handle" draggable="true">⋮⋮</span>' +
+          '<input class="item-name-input" value="' + escHtml(item.name) + '" data-field="item-name" placeholder="名称">' +
+          '<div class="item-amount-wrap">' +
+            '<span class="item-amount-prefix">¥</span>' +
+            '<input class="item-amount-input expense" value="' + (typeof amtDisplay === "number" ? amtDisplay : amtDisplay) + '" data-field="item-amount" placeholder="金额">' +
+          '</div>' +
+          '<button class="btn-del" data-action="delete-item">✕</button>' +
         '</div>' +
-        '<textarea class="item-note-input" data-field="item-note" placeholder="备注" rows="1">' + escHtml(item.note || "") + '</textarea>' +
-        '<button class="btn-del" data-action="delete-item">✕</button>' +
+        '<div style="padding-left:32px;padding-bottom:4px;">' +
+          '<textarea class="item-note-input" data-field="item-note" placeholder="备注" rows="1" style="width:100%;">' + escHtml(item.note || "") + '</textarea>' +
+        '</div>' +
       '</div>';
+    });
     });
 
     expHtml += '</div><div class="add-item-wrap"><button class="btn btn-add" data-action="add-item">+ 添加小类目</button></div></div></div>';
   });
   expenseContainer.innerHTML = expHtml;
   document.getElementById("monthExpenseTotal").textContent = formatAmount(expenseTotal);
+  // Check for ranges in expense items
+  var allExpItems = [];
+  data.expenseCategories.forEach(function(cat) { allExpItems = allExpItems.concat(cat.items); });
+  var expResult = sumWithRanges(allExpItems, "amount");
+  if (expResult.hasRange) {
+    document.getElementById("monthExpenseTotal").textContent = formatAmountRange(expResult);
+  }
   // Check for ranges in expense items
   var allExpItems = [];
   data.expenseCategories.forEach(function(cat) { allExpItems = allExpItems.concat(cat.items); });
@@ -2212,11 +2251,11 @@ incomeCard.addEventListener("blur", function(e) {
   }
   var itemNameInput = e.target.closest('[data-field="income-item-name"]');
   if (itemNameInput) {
-    var itemRow = itemNameInput.closest(".item-row");
+    var wrapper = itemNameInput.closest('[data-item-idx]');
     var cat = itemNameInput.closest(".income-cat");
-    if (!cat || !itemRow) return;
+    if (!cat || !wrapper) return;
     var catIdx = parseInt(cat.dataset.catIdx);
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
     appData.incomeCategories[catIdx].items[itemIdx].name = itemNameInput.value.trim();
     if (!window._dragSortActive) renderIncome();
@@ -2225,11 +2264,11 @@ incomeCard.addEventListener("blur", function(e) {
   }
   var itemAmtInput = e.target.closest('[data-field="income-item-amount"]');
   if (itemAmtInput) {
-    var itemRow = itemAmtInput.closest(".item-row");
+    var wrapper = itemAmtInput.closest('[data-item-idx]');
     var cat = itemAmtInput.closest(".income-cat");
-    if (!cat || !itemRow) return;
+    if (!cat || !wrapper) return;
     var catIdx = parseInt(cat.dataset.catIdx);
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
     var raw = itemAmtInput.value.trim();
     var num = parseFloat(raw.replace(/[¥,\s]/g, ""));
@@ -2242,11 +2281,11 @@ incomeCard.addEventListener("blur", function(e) {
   }
   var itemNoteInput = e.target.closest('[data-field="income-item-note"]');
   if (itemNoteInput) {
-    var itemRow = itemNoteInput.closest(".item-row");
+    var wrapper = itemNoteInput.closest('[data-item-idx]');
     var cat = itemNoteInput.closest(".income-cat");
-    if (!cat || !itemRow) return;
+    if (!cat || !wrapper) return;
     var catIdx = parseInt(cat.dataset.catIdx);
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
     appData.incomeCategories[catIdx].items[itemIdx].note = itemNoteInput.value.trim();
     if (!window._dragSortActive) renderIncome();
@@ -2276,11 +2315,11 @@ incomeCard.addEventListener("click", function(e) {
   }
   var delBtn = e.target.closest('[data-action="delete-income-item"]');
   if (delBtn) {
-    var itemRow = delBtn.closest(".item-row");
+    var wrapper = delBtn.closest('[data-item-idx]');
     var cat = delBtn.closest(".income-cat");
-    if (!cat || !itemRow) return;
+    if (!cat || !wrapper) return;
     var catIdx = parseInt(cat.dataset.catIdx);
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     if (catIdx >= appData.incomeCategories.length || itemIdx >= appData.incomeCategories[catIdx].items.length) return;
     appData.incomeCategories[catIdx].items.splice(itemIdx, 1);
     renderIncome();
@@ -2295,6 +2334,17 @@ incomeCard.addEventListener("click", function(e) {
     if (catIdx >= appData.incomeCategories.length) return;
     if (!confirm("确定删除「" + appData.incomeCategories[catIdx].name + "」及其所有小类目吗？")) return;
     appData.incomeCategories.splice(catIdx, 1);
+    renderIncome();
+    saveToStorage();
+    return;
+  }
+  var toggleBtn = e.target.closest('[data-action="toggle-income-cat"]');
+  if (toggleBtn) {
+    var cat = toggleBtn.closest(".income-cat");
+    if (!cat) return;
+    var catIdx = parseInt(cat.dataset.catIdx);
+    if (catIdx >= appData.incomeCategories.length) return;
+    appData.incomeCategories[catIdx]._collapsed = !appData.incomeCategories[catIdx]._collapsed;
     renderIncome();
     saveToStorage();
     return;
@@ -2461,11 +2511,11 @@ monthlyCard.addEventListener("click", function(e) {
   }
   var delItemBtn = e.target.closest('[data-action="delete-item"]');
   if (delItemBtn) {
-    var itemRow = delItemBtn.closest(".item-row");
+    var wrapper = delItemBtn.closest('[data-item-idx]');
     var cat = delItemBtn.closest(".month-category");
-    if (!cat || !itemRow) return;
+    if (!cat || !wrapper) return;
     var catIdx = parseInt(cat.dataset.catIdx);
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     var data = ensureMonthData(currentMonth);
     data.expenseCategories[catIdx].items.splice(itemIdx, 1);
     renderMonthly();
@@ -2474,9 +2524,9 @@ monthlyCard.addEventListener("click", function(e) {
   }
   var delIncomeBtn = e.target.closest('[data-action="delete-income-item-month"]');
   if (delIncomeBtn) {
-    var itemRow = delIncomeBtn.closest(".item-row");
-    if (!itemRow) return;
-    var itemIdx = parseInt(itemRow.dataset.itemIdx);
+    var wrapper = delIncomeBtn.closest('[data-item-idx]');
+    if (!wrapper) return;
+    var itemIdx = parseInt(wrapper.dataset.itemIdx);
     var data = ensureMonthData(currentMonth);
     data.incomeItems.splice(itemIdx, 1);
     renderMonthly();
@@ -2522,17 +2572,17 @@ monthlyCard.addEventListener("click", function(e) {
 monthlyCard.addEventListener("blur", function(e) {
   var nameInput = e.target.closest('[data-field="item-name"]');
   if (nameInput) {
-    var itemRow = nameInput.closest(".item-row");
-    if (!itemRow) return;
+    var wrapper = nameInput.closest('[data-item-idx]');
+    if (!wrapper) return;
     var cat = nameInput.closest(".month-category");
     var isIncome = nameInput.closest("#monthIncomeItems");
     var data = ensureMonthData(currentMonth);
     if (isIncome) {
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       data.incomeItems[itemIdx].name = nameInput.value.trim();
     } else if (cat) {
       var catIdx = parseInt(cat.dataset.catIdx);
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       data.expenseCategories[catIdx].items[itemIdx].name = nameInput.value.trim();
     }
     if (!window._dragSortActive) renderMonthly();
@@ -2541,14 +2591,14 @@ monthlyCard.addEventListener("blur", function(e) {
   }
   var amtInput = e.target.closest('[data-field="item-amount"]');
   if (amtInput) {
-    var itemRow = amtInput.closest(".item-row");
-    if (!itemRow) return;
+    var wrapper = amtInput.closest('[data-item-idx]');
+    if (!wrapper) return;
     var cat = amtInput.closest(".month-category");
     var isIncome = amtInput.closest("#monthIncomeItems");
     var data = ensureMonthData(currentMonth);
     var raw = amtInput.value.trim();
     if (isIncome) {
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       var cleaned = raw.replace(/[¥,\s]/g, "");
       var num = parseFloat(cleaned);
       if (!isNaN(num)) data.incomeItems[itemIdx].amount = num;
@@ -2556,7 +2606,7 @@ monthlyCard.addEventListener("blur", function(e) {
       else data.incomeItems[itemIdx].amount = 0;
     } else if (cat) {
       var catIdx = parseInt(cat.dataset.catIdx);
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       var cleaned = raw.replace(/[¥,\s]/g, "");
       var num = parseFloat(cleaned);
       if (!isNaN(num)) data.expenseCategories[catIdx].items[itemIdx].amount = num;
@@ -2569,17 +2619,17 @@ monthlyCard.addEventListener("blur", function(e) {
   }
   var noteInput = e.target.closest('[data-field="item-note"]');
   if (noteInput) {
-    var itemRow = noteInput.closest(".item-row");
-    if (!itemRow) return;
+    var wrapper = noteInput.closest('[data-item-idx]');
+    if (!wrapper) return;
     var cat = noteInput.closest(".month-category");
     var isIncome = noteInput.closest("#monthIncomeItems");
     var data = ensureMonthData(currentMonth);
     if (isIncome) {
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       data.incomeItems[itemIdx].note = noteInput.value.trim();
     } else if (cat) {
       var catIdx = parseInt(cat.dataset.catIdx);
-      var itemIdx = parseInt(itemRow.dataset.itemIdx);
+      var itemIdx = parseInt(wrapper.dataset.itemIdx);
       data.expenseCategories[catIdx].items[itemIdx].note = noteInput.value.trim();
     }
     if (!window._dragSortActive) renderMonthly();
@@ -2769,8 +2819,11 @@ document.getElementById("btnDelYear").addEventListener("click", deleteCurrentYea
 // ==================== textarea 自动高度 ====================
 document.addEventListener("input", function(e) {
   if (e.target.tagName !== "TEXTAREA") return;
+  // Only auto-height for item-note-input (备注) textareas, not all
+  if (!e.target.classList.contains("item-note-input")) return;
   e.target.style.height = "auto";
-  e.target.style.height = (e.target.scrollHeight) + "px";
+  var newH = Math.min(e.target.scrollHeight, 80);
+  e.target.style.height = newH + "px";
 });
 
 // ==================== 初始化 ====================
