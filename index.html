@@ -2751,15 +2751,17 @@ async function doSaveBackup() {
     await writable.close();
     showToast("备份已保存");
   } catch (e) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast("备份已保存");
+    const reader = new FileReader();
+    reader.onload = function() {
+      const a = document.createElement("a");
+      a.href = reader.result;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { document.body.removeChild(a); }, 200);
+      showToast("备份已保存");
+    };
+    reader.readAsDataURL(blob);
   }
 }
 
