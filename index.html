@@ -317,7 +317,7 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 .table-num { width: 28px; text-align: center; color: var(--text-tertiary); font-size: 0.78rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ========== 收入大类结构（年度收入）========== */
-.income-cat { margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.income-cat { margin-bottom: 24px; border: 1.5px solid #c5bfb0; border-radius: var(--radius); overflow: hidden; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
 .income-cat-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--cat-header-bg); user-select: none; cursor: pointer;
 }
@@ -757,11 +757,8 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
   <!-- ========== 标签页：目标 ========== -->
   <div class="tab-content" data-tab="goals">
     <div class="card" id="incomeCard" style="margin-bottom:14px;">
-      <div class="card-title-with-total" style="padding:0 2px;margin-bottom:10px;">
+      <div class="card-title-with-total" style="margin-bottom:14px;">
         <div class="card-title">年度收入</div>
-        <div class="card-title-total income" id="incomeGrandTotal">¥0</div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;padding:0 2px;">
         <button class="btn btn-add-cat" id="btnAddIncomeCat" style="font-size:0.78rem;">+ 添加大类目</button>
       </div>
       <div id="incomeCategories"></div>
@@ -771,7 +768,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
     <div class="card" id="largeExpenseCard">
       <div class="card-title-with-total">
         <div class="card-title">年度大额支出</div>
-        <div class="card-title-total expense" id="largeExpenseTotal">¥0</div>
+        <div class="card-title-total expense" id="largeExpenseTotal" style="display:none">¥0</div>
       </div>
       <div id="largeExpenseList"></div>
       <button class="btn btn-add" data-action="add-large-expense" style="margin-top:8px;">+ 添加支出项</button>
@@ -780,7 +777,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
     <div class="card" id="debtCard">
       <div class="card-title-with-total">
         <div class="card-title">欠款追踪</div>
-        <div class="card-title-total expense" id="debtTotalTitle">¥0</div>
+        <div class="card-title-total expense" id="debtTotalTitle" style="display:none">¥0</div>
       </div>
       <div id="debtList"></div>
       <button class="btn btn-add" data-action="add-debt" style="margin-top:8px;">+ 添加欠款项</button>
@@ -1474,7 +1471,6 @@ function renderOverview() {
 
 function renderIncome() {
   const container = document.getElementById("incomeCategories");
-  const grandTotalEl = document.getElementById("incomeGrandTotal");
   let grandTotal = 0;
   let html = "";
 
@@ -1517,7 +1513,6 @@ function renderIncome() {
   });
 
   container.innerHTML = html;
-  if (grandTotalEl) grandTotalEl.textContent = formatAmount(grandTotal);
   var incomeTotal = document.getElementById("incomeTotal");
   if (incomeTotal) incomeTotal.innerHTML = '<span class="income-total-label">收入合计</span><span class="income-total-value">' + formatAmount(grandTotal) + '</span>';
 }
@@ -1551,7 +1546,7 @@ function renderLargeExpense() {
 
   html += '<div class="income-total-wrap" style="margin-top:6px;">' +
     '<span class="income-total-label">支出合计</span>' +
-    '<span class="income-total-value">' + formatAmount(total) + '</span>' +
+    '<span class="income-total-value" style="color:var(--expense)">' + formatAmount(total) + '</span>' +
   '</div>';
   container.innerHTML = html;
   if (totalTitle) totalTitle.textContent = formatAmount(total);
@@ -1586,7 +1581,7 @@ function renderDebt() {
 
   html += '<div class="income-total-wrap" style="margin-top:6px;">' +
     '<span class="income-total-label">欠款合计</span>' +
-    '<span class="income-total-value">' + formatAmount(total) + '</span>' +
+    '<span class="income-total-value" style="color:var(--expense)">' + formatAmount(total) + '</span>' +
   '</div>';
   container.innerHTML = html;
   if (totalTitle) totalTitle.textContent = formatAmount(total);
