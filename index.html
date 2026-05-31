@@ -200,7 +200,7 @@ body {
 .allocation-subtitle-row .sub-actions { width: 36px; flex-shrink: 0; }
 
 .allocation-item-row {
-  display: flex; align-items: flex-start; gap: 6px; padding: 8px 0; border-bottom: 1px solid #f0ede8; flex-wrap: wrap;
+  display: flex; align-items: flex-start; gap: 6px; padding: 8px 0; flex-wrap: wrap;
 }
 .allocation-item-row .sub-spacer { width: 30px; flex-shrink: 0; }
 .allocation-item-row .sub-name { flex: 1.6; min-width: 0; }
@@ -515,9 +515,9 @@ tr.dragging td { opacity: 0.4; }
   color: var(--text-secondary); outline: none; resize: none;
 }
 .month-alloc-name-input {
-  flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px;
-  font-size: 0.85rem; font-family: inherit; background: var(--input-bg); color: var(--text);
-  outline: none; transition: border-color 0.15s;
+  flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 4px 6px;
+  font-size: 0.82rem; font-family: inherit; background: var(--input-bg); color: var(--text);
+  outline: none; transition: border-color 0.15s; min-width: 0;
 }
 .month-alloc-name-input:focus { border-color: var(--text-tertiary); background: #fff; }
 .month-alloc-name-input::placeholder { color: var(--text-tertiary); font-size: 0.8rem; }
@@ -694,8 +694,12 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
   .overview-stats { gap: 6px; }
   .overview-stat-value { font-size: 1.15rem; }
   .month-alloc-line2 { padding-left: 28px; }
-  .month-alloc-line2 .item-amount-wrap { width: 95px; }
+  .month-alloc-line2 .item-amount-wrap { width: 75px; }
   .month-alloc-target { font-size: 0.7rem; }
+  .month-alloc-line1 { gap: 3px; }
+  .month-alloc-name-input { font-size: 0.78rem; padding: 3px 5px; }
+  .month-alloc-target-block { min-width: 50px; }
+  .month-alloc-target-block .month-alloc-target-val { font-size: 0.64rem; }
 }
 </style>
 </head>
@@ -812,6 +816,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
         <span class="month-section-total expense" id="monthExpenseTotal">¥0</span>
       </div>
       <div id="monthExpenseCategories"></div>
+      <button class="btn btn-add-cat" id="btnAddExpenseCat" style="font-size:0.78rem;margin-top:6px;">+ 增加大类目</button>
 
       <div class="month-summary">
         <span class="month-summary-label">当月存款</span>
@@ -2497,6 +2502,14 @@ monthlyCard.addEventListener("click", function(e) {
     var catIdx = parseInt(cat.dataset.catIdx);
     var data = ensureMonthData(currentMonth);
     data.expenseCategories[catIdx].items.push({ name: "", amount: 0, note: "" });
+    renderMonthly();
+    saveToStorage();
+    return;
+  }
+  var addExpCatBtn = e.target.closest('#btnAddExpenseCat');
+  if (addExpCatBtn) {
+    var data = ensureMonthData(currentMonth);
+    data.expenseCategories.push({ name: "新大类", collapsed: false, items: [] });
     renderMonthly();
     saveToStorage();
     return;
