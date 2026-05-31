@@ -212,7 +212,7 @@ body {
 }
 .allocation-item-note textarea {
   width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 5px 8px;
-  font-size: 0.75rem; font-family: inherit; background: var(--input-bg); color: var(--text-secondary);
+  font-size: 0.75rem; font-family: inherit; background: transparent; color: var(--text-secondary);
   outline: none; resize: none; min-height: 24px; line-height: 1.4;
 }
 .allocation-item-note textarea:focus { border-color: var(--text-tertiary); background: #fff; }
@@ -233,10 +233,6 @@ body {
 .allocation-summary-row .summary-value { font-family: var(--font-mono); font-weight: 700; font-size: 0.88rem; color: var(--text); }
 .allocation-summary-dashed { padding: 6px 12px; border-top: 1px dashed var(--border); margin-top: 4px; }
 .allocation-summary-dashed .summary-value { color: var(--expense); }
-
-#allocationCard .table-wrap { display: block; }
-#allocationCard table { display: table; width: 100%; border-collapse: collapse; }
-#allocationCard thead { display: none; }
 
 /* ========== 年度总览（首页） ========== */
 .overview-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
@@ -316,7 +312,7 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 .table-num { width: 28px; text-align: center; color: var(--text-tertiary); font-size: 0.78rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ========== 收入大类结构（年度收入）========== */
-.income-cat { margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.income-cat { margin-bottom: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .income-cat-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--cat-header-bg); user-select: none; cursor: pointer;
 }
@@ -384,7 +380,7 @@ td[data-field="note"] { min-width: 80px; white-space: normal; word-break: break-
 
 .item-note-input {
   flex: 1; border: 1px solid transparent; border-radius: 6px; padding: 5px 8px;
-  font-size: 0.78rem; font-family: inherit; background: var(--input-bg); color: var(--text);
+  font-size: 0.78rem; font-family: inherit; background: transparent; color: var(--text);
   outline: none; min-width: 45px; resize: none; min-height: 30px; transition: border-color 0.15s; line-height: 1.4;
 }
 .item-note-input:focus { border-color: var(--text-tertiary); background: #fff; }
@@ -680,19 +676,6 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
   .month-alloc-line2 { padding-left: 28px; }
   .month-alloc-line2 .item-amount-wrap { width: 95px; }
   .month-alloc-target { font-size: 0.7rem; }
-
-  #allocationCard thead { display: none; }
-  #allocationCard tbody tr {
-    display: flex; flex-wrap: wrap; padding: 10px 6px; border-bottom: 1px solid var(--border); gap: 4px; align-items: center;
-  }
-  #allocationCard td { display: block; padding: 2px 4px; border-bottom: none; white-space: normal; word-break: break-word; }
-  #allocationCard td.drag-handle-cell { width: 24px; flex-shrink: 0; padding: 2px 1px !important; }
-  #allocationCard td.editable-input[data-field="name"] { width: 100%; font-weight: 600; font-size: 0.88rem; }
-  #allocationCard td.editable-input[data-field="currentAmount"],
-  #allocationCard td.editable-input[data-field="targetAmount"] { width: calc(50% - 18px); font-size: 0.8rem; }
-  #allocationCard td.editable-input[data-field="note"] { width: 100%; font-size: 0.75rem; color: var(--text-secondary); }
-  #allocationCard td.actions { width: auto; margin-left: auto; }
-  #allocationCard tfoot tr { display: flex; flex-wrap: wrap; padding: 4px 6px; border-top: none; }
 }
 </style>
 </head>
@@ -850,13 +833,7 @@ details.plan-detail[open] summary::after { transform: rotate(90deg); }
         <span class="sub-note">备注</span>
         <span class="sub-actions"></span>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th class="drag-handle-cell"></th><th>项目</th><th class="amount">目前金额</th><th class="amount">目标金额</th><th>备注</th><th class="actions"></th></tr></thead>
-          <tbody id="allocationBody"></tbody>
-          <tfoot id="allocationFoot"></tfoot>
-        </table>
-      </div>
+      <div id="allocationBody"></div>
 
     </div>
 
